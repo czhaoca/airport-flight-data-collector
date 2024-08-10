@@ -11,7 +11,33 @@ This project uses a Cloudflare Worker to automatically collect daily flight data
 - Uses Cloudflare Workers for serverless execution
 - Pushes collected data directly to a GitHub repository
 
-## Setup
+## Project Structure
+
+```
+airport-flight-data-collector/
+├── src/
+│   └── index.js
+├── wrangler.toml
+├── package.json
+├── README.md
+├── LICENSE
+└── .gitignore
+```
+
+- `src/index.js`: Contains the main Cloudflare Worker code
+- `wrangler.toml`: Configuration file for the Cloudflare Worker
+- `package.json`: Defines project metadata and dependencies
+- `README.md`: This file, containing project documentation
+- `LICENSE`: The license file for the project
+- `.gitignore`: Specifies files that Git should ignore
+
+## Prerequisites
+
+- Node.js and npm installed on your local machine
+- A Cloudflare account
+- A GitHub account and personal access token with repo scope
+
+## Setup and Deployment
 
 1. Clone this repository:
    ```
@@ -19,38 +45,50 @@ This project uses a Cloudflare Worker to automatically collect daily flight data
    cd airport-flight-data-collector
    ```
 
-2. Install Wrangler CLI:
+2. Install dependencies:
+   ```
+   npm install
+   ```
+
+3. Install Wrangler CLI globally:
    ```
    npm install -g @cloudflare/wrangler
    ```
 
-3. Set up your Cloudflare account and authenticate Wrangler.
+4. Authenticate Wrangler with your Cloudflare account:
+   ```
+   wrangler login
+   ```
 
-4. Create a KV namespace for storing the GitHub token:
+5. Update `wrangler.toml` with your Cloudflare account details:
+   - Replace `your_account_id` with your Cloudflare account ID
+   - Update the `compatibility_date` if needed
+
+6. Create a KV namespace for storing the GitHub token:
    ```
    wrangler kv:namespace create "GITHUB_KV"
    ```
-   Add the returned id to your `wrangler.toml` file.
+   Copy the returned id and replace `your_kv_namespace_id` in `wrangler.toml`.
 
-5. Add your GitHub Personal Access Token to the KV namespace:
+7. Add your GitHub Personal Access Token to the KV namespace:
    ```
    wrangler kv:key put --binding=GITHUB_KV "TOKEN" "your_github_token"
    ```
 
-6. Update the `wrangler.toml` file with your account details and add the cron trigger:
-   ```toml
-   [triggers]
-   crons = ["0 14 * * *"]  # Runs daily at 14:00 UTC (adjust as needed)
+8. Update `src/index.js`:
+   - Replace `YOUR_GITHUB_USERNAME` with your GitHub username
+   - If you've used a different repository name, update `airport-flight-data-collector` accordingly
+
+9. Deploy the worker:
+   ```
+   npm run deploy
    ```
 
-7. Deploy the worker:
-   ```
-   wrangler publish
-   ```
+Your Cloudflare Worker is now deployed and will run daily according to the schedule specified in `wrangler.toml`.
 
 ## Adding New Airports
 
-To add a new airport, modify the `handleScheduled` function in the worker script:
+To add a new airport, modify the `handleScheduled` function in `src/index.js`:
 
 ```javascript
 async function handleScheduled(scheduledTime) {
@@ -65,7 +103,7 @@ async function handleScheduled(scheduledTime) {
 
 ## Data Structure
 
-Collected data is stored in the `data` folder of this repository, with subfolders for each airport:
+Collected data is stored in the `data` folder of your GitHub repository, with subfolders for each airport:
 
 ```
 data/
@@ -83,6 +121,12 @@ data/
 │   └── ...
 └── ...
 ```
+
+## Troubleshooting
+
+- If you encounter any issues with deployment, ensure that your `wrangler.toml` file is correctly configured with your account details.
+- Check that your GitHub token has the necessary permissions (repo scope) and is correctly stored in the KV namespace.
+- Review the Cloudflare Worker logs for any error messages if data collection fails.
 
 ## Contributing
 
