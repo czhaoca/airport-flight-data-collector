@@ -52,8 +52,10 @@ airport-flight-data-collector/
 
 3. Install Wrangler CLI globally:
    ```
-   npm install -g @cloudflare/wrangler
+   npm install -g wrangler
    ```
+
+   Note: If you prefer not to install Wrangler globally, you can use `npx wrangler` instead of `wrangler` in the following commands.
 
 4. Authenticate Wrangler with your Cloudflare account:
    ```
@@ -124,6 +126,8 @@ data/
 
 ## Troubleshooting
 
+- If you encounter any issues with Wrangler installation or usage, ensure you're using the latest version. You can update Wrangler with `npm install -g wrangler@latest`.
+- If you prefer not to use global installations, you can use `npx wrangler` instead of `wrangler` for all commands.
 - If you encounter any issues with deployment, ensure that your `wrangler.toml` file is correctly configured with your account details.
 - Check that your GitHub token has the necessary permissions (repo scope) and is correctly stored in the KV namespace.
 - Review the Cloudflare Worker logs for any error messages if data collection fails.
