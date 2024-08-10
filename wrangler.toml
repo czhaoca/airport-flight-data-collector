@@ -1,14 +1,17 @@
 name = "airport-flight-data-collector"
 type = "javascript"
-account_id = "your_account_id"
+account_id = "" # This will be set via environment variable
 workers_dev = true
 route = ""
 zone_id = ""
 compatibility_date = "2023-05-18"
 
-kv_namespaces = [
-  { binding = "GITHUB_KV", id = "your_kv_namespace_id" }
-]
+[vars]
+GITHUB_USERNAME = ""
+GITHUB_REPO = ""
+
+[secrets]
+GITHUB_TOKEN = ""
 
 [triggers]
 crons = ["0 14 * * *"]  # Runs daily at 14:00 UTC (adjust as needed)

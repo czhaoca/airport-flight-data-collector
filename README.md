@@ -96,31 +96,75 @@ Now you should have the required versions to proceed with the setup.
    wrangler login
    ```
 
-5. Update `wrangler.toml` with your Cloudflare account details:
-   - Replace `your_account_id` with your Cloudflare account ID
-   - Update the `compatibility_date` if needed
-
-6. Create a KV namespace for storing the GitHub token:
+5. Set up environment variables:
+   
+   Create a `.env` file in the root of your project with the following content:
    ```
-   wrangler kv:namespace create "GITHUB_KV"
-   ```
-   Copy the returned id and replace `your_kv_namespace_id` in `wrangler.toml`.
-
-7. Add your GitHub Personal Access Token to the KV namespace:
-   ```
-   wrangler kv:key put --binding=GITHUB_KV "TOKEN" "your_github_token"
+   CLOUDFLARE_ACCOUNT_ID=your_account_id
+   GITHUB_USERNAME=your_github_username
+   GITHUB_REPO=airport-flight-data-collector
+   GITHUB_TOKEN=your_github_personal_access_token
    ```
 
-8. Update `src/index.js`:
-   - Replace `YOUR_GITHUB_USERNAME` with your GitHub username
-   - If you've used a different repository name, update `airport-flight-data-collector` accordingly
+   Replace the values with your actual Cloudflare account ID, GitHub username, repository name, and GitHub personal access token.
 
-9. Deploy the worker:
+6. Update `wrangler.toml`:
+   
+   Open `wrangler.toml` and update the `name` field if you want to use a different name for your Worker.
+
+7. Set up secrets and environment variables in Wrangler:
+   ```
+   wrangler secret put GITHUB_TOKEN
+   ```
+   When prompted, enter your GitHub personal access token.
+
+   ```
+   wrangler secret put GITHUB_USERNAME
+   wrangler secret put GITHUB_REPO
+   ```
+   Enter your GitHub username and repository name when prompted.
+
+8. Deploy the worker:
    ```
    npm run deploy
    ```
 
 Your Cloudflare Worker is now deployed and will run daily according to the schedule specified in `wrangler.toml`.
+
+## GitHub Actions (Optional)
+
+If you want to use GitHub Actions to deploy your Worker, you can create a `.github/workflows/deploy.yml` file with the following content:
+
+```yaml
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USERNAME: ${{ secrets.GITHUB_USERNAME }}
+          GITHUB_REPO: ${{ secrets.GITHUB_REPO }}
+```
+
+Make sure to add `CLOUDFLARE_API_TOKEN`, `GITHUB_TOKEN`, `GITHUB_USERNAME`, and `GITHUB_REPO` to your GitHub repository secrets.
+
+[... keep the rest of the content the same, but add the following to the Troubleshooting section ...]
+
+- If you're having issues with environment variables, make sure they are correctly set in your `.env` file and in your Wrangler secrets.
+- For GitHub Actions deployment, ensure all necessary secrets are added to your GitHub repository settings.
 
 ## Adding New Airports
 

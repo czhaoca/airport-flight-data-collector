@@ -27,8 +27,8 @@ async function get_api_json_data(folderName, url) {
     const response = await fetch(url);
     const data = await response.json();
     
-    // Fetch GitHub token from KV
-    const githubToken = await GITHUB_KV.get('TOKEN');
+    // Get GitHub token from environment variable
+    const githubToken = GITHUB_TOKEN;
     
     // Get yesterday's date
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -44,8 +44,8 @@ async function get_api_json_data(folderName, url) {
 }
 
 async function pushToGitHub(data, date, token, folderName) {
-  const owner = 'YOUR_GITHUB_USERNAME';
-  const repo = 'airport-flight-data-collector';
+  const owner = GITHUB_USERNAME;
+  const repo = GITHUB_REPO;
   const path = `data/${folderName}/${date}.json`;
   const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
   
