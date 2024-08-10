@@ -10,26 +10,7 @@ This project uses a Cloudflare Worker to automatically collect daily flight data
 - Stores data in separate folders for each airport
 - Uses Cloudflare Workers for serverless execution
 - Pushes collected data directly to a GitHub repository
-
-## Project Structure
-
-```
-airport-flight-data-collector/
-├── src/
-│   └── index.js
-├── wrangler.toml
-├── package.json
-├── README.md
-├── LICENSE
-└── .gitignore
-```
-
-- `src/index.js`: Contains the main Cloudflare Worker code
-- `wrangler.toml`: Configuration file for the Cloudflare Worker
-- `package.json`: Defines project metadata and dependencies
-- `README.md`: This file, containing project documentation
-- `LICENSE`: The license file for the project
-- `.gitignore`: Specifies files that Git should ignore
+- Includes a secure testing mechanism
 
 ## Prerequisites
 
@@ -69,8 +50,6 @@ If you don't have the required versions of Node.js and npm, follow these steps t
    npm --version
    ```
 
-Now you should have the required versions to proceed with the setup.
-
 ## Setup and Deployment
 
 1. Clone this repository:
@@ -96,17 +75,18 @@ Now you should have the required versions to proceed with the setup.
    wrangler login
    ```
 
+   This step will automatically set up your Cloudflare account ID, so you don't need to manually specify it.
+
 5. Set up environment variables:
    
    Create a `.env` file in the root of your project with the following content:
    ```
-   CLOUDFLARE_ACCOUNT_ID=your_account_id
    GITHUB_USERNAME=your_github_username
    GITHUB_REPO=airport-flight-data-collector
    GITHUB_TOKEN=your_github_personal_access_token
    ```
 
-   Replace the values with your actual Cloudflare account ID, GitHub username, repository name, and GitHub personal access token.
+   Replace the values with your actual GitHub username, repository name, and GitHub personal access token.
 
 6. Update `wrangler.toml`:
    
@@ -115,14 +95,10 @@ Now you should have the required versions to proceed with the setup.
 7. Set up secrets and environment variables in Wrangler:
    ```
    wrangler secret put GITHUB_TOKEN
-   ```
-   When prompted, enter your GitHub personal access token.
-
-   ```
    wrangler secret put GITHUB_USERNAME
    wrangler secret put GITHUB_REPO
    ```
-   Enter your GitHub username and repository name when prompted.
+   Enter the corresponding values when prompted.
 
 8. Deploy the worker:
    ```
@@ -130,6 +106,41 @@ Now you should have the required versions to proceed with the setup.
    ```
 
 Your Cloudflare Worker is now deployed and will run daily according to the schedule specified in `wrangler.toml`.
+
+## Testing the Deployment
+
+To test the deployment immediately without waiting for the cron job:
+
+1. Find your Worker's URL in the Cloudflare Dashboard or by running:
+   ```
+   wrangler dev
+   ```
+   This will show you the Worker's URL.
+
+2. Generate a test token by sending a GET request to the `/generate-test-token` endpoint:
+   ```
+   curl https://your-worker-url.workers.dev/generate-test-token
+   ```
+   This will return a JSON object with a `testAuthToken` and an expiration time.
+
+3. Use the generated token to trigger a test run by sending a POST request:
+   ```
+   curl -X POST -H "X-Test-Auth: your_generated_test_token" https://your-worker-url.workers.dev
+   ```
+   Replace `your_generated_test_token` with the token you received in step 2.
+
+4. The Worker will run a test data collection for SFO airport and store it in a temporary test folder in your GitHub repository.
+
+5. Once the test is complete, the Worker will automatically clean up the test environment, deleting the test data from GitHub and invalidating the test token.
+
+Note: Each test token is valid for a single use and expires after 5 minutes. If you need to run another test, repeat the process from step 2.
+
+## Security Notes
+
+- The test token is generated securely on the server and is never stored persistently.
+- Each test token is valid for only one test run and is automatically invalidated after use.
+- The test environment, including any data created during the test, is automatically cleaned up after each test run.
+- There's no need to manage or store test tokens manually, enhancing security.
 
 ## GitHub Actions (Optional)
 
@@ -161,53 +172,17 @@ jobs:
 
 Make sure to add `CLOUDFLARE_API_TOKEN`, `GITHUB_TOKEN`, `GITHUB_USERNAME`, and `GITHUB_REPO` to your GitHub repository secrets.
 
-## Adding New Airports
-
-To add a new airport, modify the `handleScheduled` function in `src/index.js`:
-
-```javascript
-async function handleScheduled(scheduledTime) {
-  // ... existing code ...
-
-  // Add new airport
-  await get_api_json_data('new_airport_code', 'https://api.new-airport.com/flights?date=' + date);
-
-  // ... existing code ...
-}
-```
-
-## Data Structure
-
-Collected data is stored in the `data` folder of your GitHub repository, with subfolders for each airport:
-
-```
-data/
-├── sfo_flight_status/
-│   ├── 2023-05-19.json
-│   ├── 2023-05-20.json
-│   └── ...
-├── yyz_flight_status_dep/
-│   ├── 2023-05-19.json
-│   ├── 2023-05-20.json
-│   └── ...
-├── yyz_flight_status_arr/
-│   ├── 2023-05-19.json
-│   ├── 2023-05-20.json
-│   └── ...
-└── ...
-```
-
 ## Troubleshooting
 
-- If you encounter issues related to Node.js or npm versions, make sure you've updated to the versions specified in the Prerequisites section.
-- If you're using nvm, ensure you're using the correct Node.js version for this project by running `nvm use --lts` in the project directory.
-- If you encounter any issues with Wrangler installation or usage, ensure you're using the latest version. You can update Wrangler with `npm install -g wrangler@latest`.
-- If you prefer not to use global installations, you can use `npx wrangler` instead of `wrangler` for all commands.
-- If you encounter any issues with deployment, ensure that your `wrangler.toml` file is correctly configured with your account details.
-- Check that your GitHub token has the necessary permissions (repo scope) and is correctly stored in the KV namespace.
-- Review the Cloudflare Worker logs for any error messages if data collection fails.
 - If you're having issues with environment variables, make sure they are correctly set in your `.env` file and in your Wrangler secrets.
 - For GitHub Actions deployment, ensure all necessary secrets are added to your GitHub repository settings.
+- If you're unable to find your Cloudflare account ID, you can find it in the Cloudflare dashboard. Go to the Workers page, and your account ID should be visible in the right sidebar. However, if you've successfully logged in with `wrangler login`, you shouldn't need to manually specify your account ID.
+- If you receive a "No active test session" error, it means you need to generate a new test token before running a test.
+- If you get an "Unauthorized" response when trying to run a test, ensure you're using the most recently generated test token. These tokens expire quickly for security reasons.
+- If a test token expires before you can use it, simply generate a new one.
+- If you encounter issues with test data not being cleaned up, check your GitHub repository and manually remove any leftover test folders if necessary.
+- Ensure your GitHub token has the necessary permissions to create and modify files in your repository.
+- If you're not seeing data in your GitHub repository after a test run or scheduled run, check the Worker logs in the Cloudflare dashboard for any error messages.
 
 ## Contributing
 
