@@ -33,9 +33,43 @@ airport-flight-data-collector/
 
 ## Prerequisites
 
-- Node.js and npm installed on your local machine
+- Node.js version 16.13 or higher (LTS version recommended)
+- npm version 8.0 or higher (comes with Node.js)
 - A Cloudflare account
 - A GitHub account and personal access token with repo scope
+
+### Updating Node.js and npm
+
+If you don't have the required versions of Node.js and npm, follow these steps to update:
+
+1. Check your current versions:
+   ```
+   node --version
+   npm --version
+   ```
+
+2. If you need to update, we recommend using a version manager like nvm (Node Version Manager):
+
+   For Linux and macOS:
+   ```
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+   ```
+   
+   For Windows, you can use [nvm-windows](https://github.com/coreybutler/nvm-windows)
+
+3. After installing nvm, restart your terminal and install the latest LTS version of Node.js:
+   ```
+   nvm install --lts
+   nvm use --lts
+   ```
+
+4. Verify the new versions:
+   ```
+   node --version
+   npm --version
+   ```
+
+Now you should have the required versions to proceed with the setup.
 
 ## Setup and Deployment
 
@@ -126,6 +160,8 @@ data/
 
 ## Troubleshooting
 
+- If you encounter issues related to Node.js or npm versions, make sure you've updated to the versions specified in the Prerequisites section.
+- If you're using nvm, ensure you're using the correct Node.js version for this project by running `nvm use --lts` in the project directory.
 - If you encounter any issues with Wrangler installation or usage, ensure you're using the latest version. You can update Wrangler with `npm install -g wrangler@latest`.
 - If you prefer not to use global installations, you can use `npx wrangler` instead of `wrangler` for all commands.
 - If you encounter any issues with deployment, ensure that your `wrangler.toml` file is correctly configured with your account details.
