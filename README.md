@@ -161,11 +161,6 @@ jobs:
 
 Make sure to add `CLOUDFLARE_API_TOKEN`, `GITHUB_TOKEN`, `GITHUB_USERNAME`, and `GITHUB_REPO` to your GitHub repository secrets.
 
-[... keep the rest of the content the same, but add the following to the Troubleshooting section ...]
-
-- If you're having issues with environment variables, make sure they are correctly set in your `.env` file and in your Wrangler secrets.
-- For GitHub Actions deployment, ensure all necessary secrets are added to your GitHub repository settings.
-
 ## Adding New Airports
 
 To add a new airport, modify the `handleScheduled` function in `src/index.js`:
@@ -211,6 +206,8 @@ data/
 - If you encounter any issues with deployment, ensure that your `wrangler.toml` file is correctly configured with your account details.
 - Check that your GitHub token has the necessary permissions (repo scope) and is correctly stored in the KV namespace.
 - Review the Cloudflare Worker logs for any error messages if data collection fails.
+- If you're having issues with environment variables, make sure they are correctly set in your `.env` file and in your Wrangler secrets.
+- For GitHub Actions deployment, ensure all necessary secrets are added to your GitHub repository settings.
 
 ## Contributing
 
