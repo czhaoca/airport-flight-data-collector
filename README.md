@@ -68,14 +68,10 @@ If you don't have the required versions of Node.js and npm, follow these steps t
    npm install -g wrangler
    ```
 
-   Note: If you prefer not to install Wrangler globally, you can use `npx wrangler` instead of `wrangler` in the following commands.
-
 4. Authenticate Wrangler with your Cloudflare account:
    ```
    wrangler login
    ```
-
-   This step will automatically set up your Cloudflare account ID, so you don't need to manually specify it.
 
 5. Set up environment variables:
    
@@ -90,20 +86,25 @@ If you don't have the required versions of Node.js and npm, follow these steps t
 
 6. Update `wrangler.toml`:
    
-   Open `wrangler.toml` and update the `name` field if you want to use a different name for your Worker.
+   Ensure your `wrangler.toml` file in the root of your project has the following content:
 
-7. Set up secrets and environment variables in Wrangler:
-   ```
-   wrangler secret put GITHUB_TOKEN
-   wrangler secret put GITHUB_USERNAME
-   wrangler secret put GITHUB_REPO
-   ```
-   Enter the corresponding values when prompted.
+   ```toml
+   name = "airport-flight-data-collector"
+   main = "src/index.js"
+   compatibility_date = "2023-05-18"
 
-8. Deploy the worker:
+   [triggers]
+   crons = ["0 14 * * *"]  # Runs daily at 14:00 UTC (adjust as needed)
+   ```
+
+   Note: The `compatibility_date` should be set to the current date when you're setting up the project.
+
+7. Deploy the worker:
    ```
    npm run deploy
    ```
+
+   This script will automatically set the required secrets in your Cloudflare Worker environment, deploy the worker, and generate a secure TEST_AUTH_TOKEN for testing. Make sure to save this token securely.
 
 Your Cloudflare Worker is now deployed and will run daily according to the schedule specified in `wrangler.toml`.
 
@@ -117,30 +118,21 @@ To test the deployment immediately without waiting for the cron job:
    ```
    This will show you the Worker's URL.
 
-2. Generate a test token by sending a GET request to the `/generate-test-token` endpoint:
+2. Use the generated token to trigger a test run by sending a POST request:
    ```
-   curl https://your-worker-url.workers.dev/generate-test-token
+   curl -X POST -H "Authorization: Bearer YOUR_TEST_AUTH_TOKEN" https://your-worker-url.workers.dev/test
    ```
-   This will return a JSON object with a `testAuthToken` and an expiration time.
+   Replace `YOUR_TEST_AUTH_TOKEN` with the token generated during deployment, and `your-worker-url` with your actual Worker URL.
 
-3. Use the generated token to trigger a test run by sending a POST request:
-   ```
-   curl -X POST -H "X-Test-Auth: your_generated_test_token" https://your-worker-url.workers.dev
-   ```
-   Replace `your_generated_test_token` with the token you received in step 2.
+3. The Worker will run a test data collection for SFO airport and store it in a temporary test folder in your GitHub repository.
 
-4. The Worker will run a test data collection for SFO airport and store it in a temporary test folder in your GitHub repository.
-
-5. Once the test is complete, the Worker will automatically clean up the test environment, deleting the test data from GitHub and invalidating the test token.
-
-Note: Each test token is valid for a single use and expires after 5 minutes. If you need to run another test, repeat the process from step 2.
+Note: The TEST_AUTH_TOKEN is regenerated each time you deploy. Always use the most recent token for testing.
 
 ## Security Notes
 
-- The test token is generated securely on the server and is never stored persistently.
-- Each test token is valid for only one test run and is automatically invalidated after use.
-- The test environment, including any data created during the test, is automatically cleaned up after each test run.
-- There's no need to manage or store test tokens manually, enhancing security.
+- The TEST_AUTH_TOKEN is generated securely during deployment and is not exposed via any public endpoints.
+- Always keep your TEST_AUTH_TOKEN secure and do not share it publicly.
+- The test endpoint is protected and can only be accessed with a valid TEST_AUTH_TOKEN.
 
 ## GitHub Actions (Optional)
 
@@ -177,11 +169,14 @@ Make sure to add `CLOUDFLARE_API_TOKEN`, `GITHUB_TOKEN`, `GITHUB_USERNAME`, and 
 - If you're having issues with environment variables, make sure they are correctly set in your `.env` file and in your Wrangler secrets.
 - For GitHub Actions deployment, ensure all necessary secrets are added to your GitHub repository settings.
 - If you're unable to find your Cloudflare account ID, you can find it in the Cloudflare dashboard. Go to the Workers page, and your account ID should be visible in the right sidebar. However, if you've successfully logged in with `wrangler login`, you shouldn't need to manually specify your account ID.
-- If you receive a "No active test session" error, it means you need to generate a new test token before running a test.
-- If you get an "Unauthorized" response when trying to run a test, ensure you're using the most recently generated test token. These tokens expire quickly for security reasons.
-- If a test token expires before you can use it, simply generate a new one.
-- If you encounter issues with test data not being cleaned up, check your GitHub repository and manually remove any leftover test folders if necessary.
-- Ensure your GitHub token has the necessary permissions to create and modify files in your repository.
+- If you encounter a "Missing entry-point" error, ensure that your `wrangler.toml` file includes the `main = "src/index.js"` line and that the path to your main script is correct.
+- If deployment fails, you can try running the deployment command manually to see more detailed error messages:
+  ```
+  wrangler deploy src/index.js
+  ```
+- If you receive an "Unauthorized" error when trying to run a test, ensure you're using the correct TEST_AUTH_TOKEN. This token is regenerated each time you deploy the worker.
+- If you've lost your TEST_AUTH_TOKEN, you can redeploy the worker to generate a new one.
+- Ensure you're sending a POST request to the /test endpoint when running a test. GET requests will not work.
 - If you're not seeing data in your GitHub repository after a test run or scheduled run, check the Worker logs in the Cloudflare dashboard for any error messages.
 
 ## Contributing

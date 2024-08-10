@@ -1,22 +1,6 @@
 name = "airport-flight-data-collector"
-type = "javascript"
-account_id = "" # This will be set via environment variable
-workers_dev = true
-route = ""
-zone_id = ""
+main = "src/index.js"
 compatibility_date = "2023-05-18"
-
-[vars]
-GITHUB_USERNAME = ""
-GITHUB_REPO = ""
-
-[secrets]
-GITHUB_TOKEN = ""
 
 [triggers]
 crons = ["0 14 * * *"]  # Runs daily at 14:00 UTC (adjust as needed)
-
-[build]
-command = ""
-[build.upload]
-format = "service-worker"
