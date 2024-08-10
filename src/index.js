@@ -1,43 +1,88 @@
+// Event listener for HTTP requests
+addEventListener('fetch', event => {
+  event.respondWith(handleRequest(event.request));
+});
+
+// Event listener for scheduled events
 addEventListener('scheduled', event => {
   event.waitUntil(handleScheduled(event.scheduledTime));
 });
 
+async function handleRequest(request) {
+  const url = new URL(request.url);
+
+  if (request.method === 'POST' && url.pathname === '/test') {
+    return handleTestRequest(request);
+  }
+
+  if (url.pathname === '/trigger-scheduled-task') {
+    await handleScheduled(new Date());
+    return new Response("Scheduled task triggered", { status: 200 });
+  }
+
+  return new Response('Not Found', { status: 404 });
+}
+
+async function handleTestRequest(request) {
+  const authHeader = request.headers.get('Authorization');
+  if (authHeader !== `Bearer ${TEST_AUTH_TOKEN}`) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  return new Response(JSON.stringify({
+    message: 'Test endpoint reached successfully',
+    timestamp: new Date().toISOString()
+  }), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    }
+  });
+}
+
 async function handleScheduled(scheduledTime) {
-  const yesterday = new Date(scheduledTime - 24 * 60 * 60 * 1000);
-  const date = yesterday.toISOString().split('T')[0];
+  const date = new Date(scheduledTime).toISOString().split('T')[0];
 
   try {
+    console.log(`Starting scheduled task for date: ${date}`);
+
     // SFO Airport
-    await get_api_json_data('sfo_flight_status', `https://www.flysfo.com/flysfo/api/flight-status?date=${date}`);
+    console.log('Fetching SFO data...');
+    const sfoData = await fetchAPIData(`https://www.flysfo.com/flysfo/api/flight-status?date=${date}`);
+    console.log('Pushing SFO data to GitHub...');
+    await pushToGitHub(sfoData, date, 'sfo_flight_status');
 
     // Toronto Airport - Departures
-    await get_api_json_data('yyz_flight_status_dep', `https://gtaa-fl-prod.azureedge.net/api/flights/list?type=DEP&day=yesterday&useScheduleTimeOnly=false`);
+    console.log('Fetching YYZ departure data...');
+    const yyzDepData = await fetchAPIData(`https://gtaa-fl-prod.azureedge.net/api/flights/list?type=DEP&day=today&useScheduleTimeOnly=false`);
+    console.log('Pushing YYZ departure data to GitHub...');
+    await pushToGitHub(yyzDepData, date, 'yyz_flight_status_dep');
 
     // Toronto Airport - Arrivals
-    await get_api_json_data('yyz_flight_status_arr', `https://gtaa-fl-prod.azureedge.net/api/flights/list?type=ARR&day=yesterday&useScheduleTimeOnly=false`);
+    console.log('Fetching YYZ arrival data...');
+    const yyzArrData = await fetchAPIData(`https://gtaa-fl-prod.azureedge.net/api/flights/list?type=ARR&day=today&useScheduleTimeOnly=false`);
+    console.log('Pushing YYZ arrival data to GitHub...');
+    await pushToGitHub(yyzArrData, date, 'yyz_flight_status_arr');
 
     console.log('All data successfully fetched and pushed to GitHub');
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error in scheduled task:', error.message);
+    console.error('Error stack:', error.stack);
   }
 }
 
-async function get_api_json_data(folderName, url) {
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-    
-    // Get yesterday's date
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const date = yesterday.toISOString().split('T')[0];
-    
-    // Push to GitHub
-    await pushToGitHub(data, date, folderName);
-    
-    console.log(`Data successfully fetched and pushed to GitHub for ${folderName}`);
-  } catch (error) {
-    console.error(`Error in get_api_json_data for ${folderName}:`, error);
+async function fetchAPIData(url) {
+  console.log(`Fetching data from: ${url}`);
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`API responded with status: ${response.status}, ${response.statusText}`);
   }
+  const data = await response.json();
+  console.log(`Successfully fetched data from: ${url}`);
+  return data;
 }
 
 async function pushToGitHub(data, date, folderName) {
@@ -55,45 +100,25 @@ async function pushToGitHub(data, date, folderName) {
     branch: 'main'
   };
 
-  const response = await fetch(apiUrl, {
-    method: 'PUT',
-    headers: {
-      'Authorization': `token ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    throw new Error(`GitHub API error: ${response.statusText}`);
-  }
-}
-
-addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request));
-});
-
-async function handleRequest(request) {
-  if (request.method === 'POST' && new URL(request.url).pathname === '/test') {
-    const authHeader = request.headers.get('Authorization');
-    if (authHeader !== `Bearer ${TEST_AUTH_TOKEN}`) {
-      return new Response('Unauthorized', { status: 401 });
-    }
-    return handleTestRun();
-  }
-  return new Response('Not Found', { status: 404 });
-}
-
-async function handleTestRun() {
-  const today = new Date();
-  const date = today.toISOString().split('T')[0];
-
   try {
-    // Test with SFO Airport data
-    await get_api_json_data(`test/sfo_flight_status`, `https://www.flysfo.com/flysfo/api/flight-status?date=${date}`);
-    return new Response('Test run completed successfully', { status: 200 });
+    const response = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Content-Type': 'application/json',
+        'User-Agent': `CloudflareWorker-${owner}`,
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`GitHub API error: ${response.status} ${response.statusText}\n${errorText}`);
+    }
+
+    console.log(`Successfully pushed data to GitHub: ${path}`);
   } catch (error) {
-    console.error('Error during test run:', error);
-    return new Response(`Test run failed: ${error.message}`, { status: 500 });
+    console.error('Error pushing to GitHub:', error);
+    throw error;
   }
 }

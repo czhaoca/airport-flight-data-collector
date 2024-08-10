@@ -5,10 +5,14 @@
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "deploy": "wrangler publish"
+    "deploy": "node deploy.js"
   },
   "author": "Your Name",
   "license": "MIT",
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "toml": "^3.0.0"
+  },
   "devDependencies": {
     "wrangler": "^3.0.0"
   }
