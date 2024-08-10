@@ -1,0 +1,15 @@
+{
+  "name": "airport-flight-data-collector",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker to collect flight data from multiple airports",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "wrangler publish"
+  },
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/wrangler": "^2.0.0"
+  }
+}
