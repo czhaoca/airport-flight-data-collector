@@ -10,6 +10,9 @@ node_modules/
 # Cloudflare Worker build output
 dist/
 
+# Test token
+test_token.txt
+
 # macOS
 .DS_Store
 
