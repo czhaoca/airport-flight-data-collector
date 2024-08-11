@@ -1,6 +1,7 @@
-const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+require('dotenv').config();
+const MAX_SIZE = typeof MAX_FILE_SIZE !== 'undefined' ? MAX_FILE_SIZE : 100 * 1024 * 1024; // Default to 100MB if not set
 
-function truncateData(data, folderName, date, pushToGitHub) {
+function truncateData(data, folderName, date, pushToGitHub, isTestRun, timestamp) {
   let batches = [];
   let currentBatch = [];
   let currentSize = 0;
@@ -32,8 +33,8 @@ function truncateData(data, folderName, date, pushToGitHub) {
       totalBatches: batches.length,
       data: batch
     };
-    const batchFileName = `${folderName}-batch-${index + 1}`;
-    pushToGitHub(batchData, date, batchFileName);
+    const batchFileName = `${folderName}-batch-${index + 1}${timestamp}`;
+    pushToGitHub(batchData, date, batchFileName, isTestRun);
   });
 
   console.log(`Data truncated into ${batches.length} batches.`);
