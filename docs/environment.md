@@ -46,7 +46,6 @@ Ensure your `wrangler.toml` file is correctly configured:
 ```toml
 name = "airport-flight-data-collector"
 type = "javascript"
-account_id = "your_account_id"
 workers_dev = true
 compatibility_date = "2023-01-01"
 

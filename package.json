@@ -4,7 +4,7 @@
   "description": "Cloudflare Worker to collect flight data from multiple airports",
   "main": "src/index.js",
   "scripts": {
-    "test": "node -e \"require('./src/test/test_endpoints.js').runTests()\"",
+    "test": "node src/test/run_tests.js",
     "deploy": "node deploy.js"
   },
   "author": "Your Name",
