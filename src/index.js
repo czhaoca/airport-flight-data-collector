@@ -17,9 +17,16 @@ addEventListener('scheduled', event => {
 
 async function handleRequest(request) {
   const url = new URL(request.url);
-  if (url.pathname === '/trigger-test') {
-    await handleScheduled(new Date(), TEST_SCHEDULE);
-    return new Response('Test schedule triggered', { status: 200 });
+  if (url.pathname === '/trigger-cron') {
+    const authHeader = request.headers.get('Authorization');
+    if (authHeader !== `Bearer ${CRON_TRIGGER_TOKEN}`) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+    const result = await handleScheduled(new Date(), TEST_SCHEDULE);
+    return new Response(JSON.stringify(result), { 
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
   return new Response('Not Found', { status: 404 });
 }
@@ -27,21 +34,22 @@ async function handleRequest(request) {
 async function handleScheduled(scheduledTime, cron) {
   const isTestRun = IS_TEST_MODE || cron === TEST_SCHEDULE;
   const date = new Date(scheduledTime).toISOString().split('T')[0];
+  const timestamp = isTestRun ? `-test-${Date.now()}` : '';
 
   console.log(`Starting ${isTestRun ? 'test' : 'production'} task for date: ${date}`);
 
   try {
     const results = await Promise.all([
-      fetchSFOData(date, isTestRun),
-      fetchYYZDepartureData(date, isTestRun),
-      fetchYYZArrivalData(date, isTestRun)
+      fetchSFOData(date, isTestRun, timestamp),
+      fetchYYZDepartureData(date, isTestRun, timestamp),
+      fetchYYZArrivalData(date, isTestRun, timestamp)
     ]);
 
     console.log('All data successfully fetched and processed');
-    return new Response(JSON.stringify(results), { status: 200 });
+    return { status: 'success', results };
   } catch (error) {
     console.error('Error in scheduled task:', error.message);
-    return new Response(`Error: ${error.message}`, { status: 500 });
+    return { status: 'error', message: error.message };
   }
 }
 

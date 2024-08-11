@@ -5,6 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "test": "node src/test/run_tests.js",
+    "test:cron": "node src/test/simulate_cron.js",
     "deploy": "wrangler deploy src/index.js"
   },
   "author": "Your Name",

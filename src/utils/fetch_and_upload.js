@@ -1,6 +1,6 @@
 const { pushToGitHub } = require('./github_push');
 
-async function fetchAndUpload(url, date, folderName, isTestRun = false) {
+async function fetchAndUpload(url, date, folderName, isTestRun = false, timestamp = '') {
   console.log(`Fetching data from: ${url}. isTestRun: ${isTestRun}`);
   const response = await fetch(url);
   if (!response.ok) {
@@ -10,7 +10,7 @@ async function fetchAndUpload(url, date, folderName, isTestRun = false) {
   console.log(`Successfully fetched data from: ${url}`);
   
   console.log(`Pushing ${folderName} data to GitHub...`);
-  await pushToGitHub(data, date, folderName, isTestRun);
+  await pushToGitHub(data, date, folderName, isTestRun, timestamp);
   console.log(`Successfully pushed ${folderName} data to GitHub`);
   
   return data;

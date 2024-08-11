@@ -1,4 +1,4 @@
-async function pushToGitHub(data, date, folderName, isTestRun = false) {
+async function pushToGitHub(data, date, folderName, isTestRun = false, timestamp = '') {
   console.log(`Pushing to GitHub. isTestRun: ${isTestRun}`);
   const owner = typeof GITHUB_USERNAME !== 'undefined' ? GITHUB_USERNAME : process.env.GITHUB_USERNAME;
   const repo = typeof GITHUB_REPO !== 'undefined' ? GITHUB_REPO : process.env.GITHUB_REPO;
@@ -8,7 +8,8 @@ async function pushToGitHub(data, date, folderName, isTestRun = false) {
     throw new Error('GitHub environment variables are not set properly');
   }
 
-  const path = isTestRun ? `data/test/${folderName}/${date}.json` : `data/${folderName}/${date}.json`;
+  const baseFolder = isTestRun ? 'data/test' : 'data';
+  const path = `${baseFolder}/${folderName}/${date}${timestamp}.json`;
   const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
   
   const content = Buffer.from(JSON.stringify(data, null, 2)).toString('base64');
