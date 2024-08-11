@@ -3,6 +3,11 @@ const { fetchYYZDepartureData } = require('../endpoints/yyz_dep_data');
 const { fetchYYZArrivalData } = require('../endpoints/yyz_arr_data');
 const { fetchSFOData } = require('../endpoints/sfo_data');
 
+// Mock global variables that would be set by Cloudflare Workers
+global.GITHUB_USERNAME = process.env.GITHUB_USERNAME;
+global.GITHUB_REPO = process.env.GITHUB_REPO;
+global.GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+
 async function runTests() {
   const date = new Date().toISOString().split('T')[0];
   

@@ -1,9 +1,8 @@
-require('dotenv').config();
-
 async function pushToGitHub(data, date, folderName) {
-  const owner = process.env.GITHUB_USERNAME;
-  const repo = process.env.GITHUB_REPO;
-  const token = process.env.GITHUB_TOKEN;
+  // Use global variables if available (Cloudflare Workers), otherwise use process.env (Node.js)
+  const owner = typeof GITHUB_USERNAME !== 'undefined' ? GITHUB_USERNAME : process.env.GITHUB_USERNAME;
+  const repo = typeof GITHUB_REPO !== 'undefined' ? GITHUB_REPO : process.env.GITHUB_REPO;
+  const token = typeof GITHUB_TOKEN !== 'undefined' ? GITHUB_TOKEN : process.env.GITHUB_TOKEN;
 
   if (!owner || !repo || !token) {
     throw new Error('GitHub environment variables are not set properly');

@@ -5,14 +5,12 @@
   "main": "src/index.js",
   "scripts": {
     "test": "node src/test/run_tests.js",
-    "deploy": "node deploy.js"
+    "deploy": "wrangler deploy src/index.js"
   },
   "author": "Your Name",
   "license": "MIT",
-  "dependencies": {
-    "dotenv": "^10.0.0"
-  },
   "devDependencies": {
+    "dotenv": "^10.0.0",
     "wrangler": "^3.0.0"
   }
 }
