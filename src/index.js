@@ -2,6 +2,11 @@ const { fetchYYZDepartureData } = require('./endpoints/yyz_dep_data');
 const { fetchYYZArrivalData } = require('./endpoints/yyz_arr_data');
 const { fetchSFOData } = require('./endpoints/sfo_data');
 
+// Ensure IS_TEST_ENVIRONMENT is set to false for production
+if (typeof IS_TEST_ENVIRONMENT === 'undefined') {
+  global.IS_TEST_ENVIRONMENT = false;
+}
+
 addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request));
 });

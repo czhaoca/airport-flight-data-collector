@@ -7,6 +7,7 @@ const { fetchSFOData } = require('../endpoints/sfo_data');
 global.GITHUB_USERNAME = process.env.GITHUB_USERNAME;
 global.GITHUB_REPO = process.env.GITHUB_REPO;
 global.GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+global.IS_TEST_ENVIRONMENT = true;
 
 async function runTests() {
   const date = new Date().toISOString().split('T')[0];
