@@ -1,8 +1,8 @@
 async function pushToGitHub(data, date, folderName, isTestRun = false, timestamp = '') {
   console.log(`Pushing to GitHub. isTestRun: ${isTestRun}`);
-  const owner = typeof GITHUB_USERNAME !== 'undefined' ? GITHUB_USERNAME : process.env.GITHUB_USERNAME;
-  const repo = typeof GITHUB_REPO !== 'undefined' ? GITHUB_REPO : process.env.GITHUB_REPO;
-  const token = typeof GITHUB_TOKEN !== 'undefined' ? GITHUB_TOKEN : process.env.GITHUB_TOKEN;
+  const owner = GITHUB_USERNAME;
+  const repo = GITHUB_REPO;
+  const token = GITHUB_TOKEN;
 
   if (!owner || !repo || !token) {
     throw new Error('GitHub environment variables are not set properly');

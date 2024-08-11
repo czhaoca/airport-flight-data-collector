@@ -3,6 +3,7 @@ const { truncateData } = require('../utils/data_truncator');
 const { pushToGitHub } = require('../utils/github_push');
 
 async function fetchYYZArrivalData(date, isTestRun = false, timestamp = '') {
+  console.log(`Fetching YYZ Arrival Data. isTestRun: ${isTestRun}`);
   const url = `https://gtaa-fl-prod.azureedge.net/api/flights/list?type=ARR&day=today&useScheduleTimeOnly=false`;
 
   let data = await fetchAndUpload(url, date, 'yyz_flight_status_arr', isTestRun, timestamp);

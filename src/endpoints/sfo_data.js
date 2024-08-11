@@ -3,6 +3,7 @@ const { truncateData } = require('../utils/data_truncator');
 const { pushToGitHub } = require('../utils/github_push');
 
 async function fetchSFOData(date, isTestRun = false, timestamp = '') {
+  console.log(`Fetching SFO Data. isTestRun: ${isTestRun}`);
   const url = `https://www.flysfo.com/flysfo/api/flight-status?date=${date}`;
   let data = await fetchAndUpload(url, date, 'sfo_flight_status', isTestRun, timestamp);
   

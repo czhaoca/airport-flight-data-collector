@@ -17,8 +17,12 @@ async function simulateCron() {
 
   // Deploy to Cloudflare Workers
   try {
-    console.log('Setting CRON_TRIGGER_TOKEN as a secret...');
+    console.log('Setting secrets...');
     execSync(`echo ${CRON_TRIGGER_TOKEN} | npx wrangler secret put CRON_TRIGGER_TOKEN`, { stdio: 'inherit' });
+    execSync(`echo ${process.env.GITHUB_USERNAME} | npx wrangler secret put GITHUB_USERNAME`, { stdio: 'inherit' });
+    execSync(`echo ${process.env.GITHUB_REPO} | npx wrangler secret put GITHUB_REPO`, { stdio: 'inherit' });
+    execSync(`echo ${process.env.GITHUB_TOKEN} | npx wrangler secret put GITHUB_TOKEN`, { stdio: 'inherit' });
+    execSync(`echo ${process.env.MAX_FILE_SIZE} | npx wrangler secret put MAX_FILE_SIZE`, { stdio: 'inherit' });
 
     console.log('Deploying to Cloudflare Workers...');
     execSync(`npx wrangler deploy src/index.js`, { stdio: 'inherit' });
