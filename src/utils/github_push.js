@@ -9,8 +9,7 @@ async function pushToGitHub(data, date, folderName) {
     throw new Error('GitHub environment variables are not set properly');
   }
 
-  const baseFolder = isTestEnvironment ? 'test' : 'data';
-  const path = `${baseFolder}/${folderName}/${date}.json`;
+  const path = isTestEnvironment ? `data/test/${folderName}/${date}.json` : `data/${folderName}/${date}.json`;
   const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
   
   const content = Buffer.from(JSON.stringify(data, null, 2)).toString('base64');
