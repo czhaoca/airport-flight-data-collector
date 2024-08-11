@@ -1,6 +1,8 @@
 require('dotenv').config();
 const { execSync } = require('child_process');
 const crypto = require('crypto');
+const fs = require('fs');
+const toml = require('toml');
 
 async function simulateCron() {
   const scheduledTime = new Date();
@@ -9,15 +11,15 @@ async function simulateCron() {
   // Generate CRON_TRIGGER_TOKEN
   const CRON_TRIGGER_TOKEN = crypto.randomBytes(16).toString('hex');
 
+  // Read worker name from wrangler.toml
+  const wranglerConfig = toml.parse(fs.readFileSync('wrangler.toml', 'utf8'));
+  const workerName = wranglerConfig.name;
+
   // Deploy to Cloudflare Workers
   try {
     console.log('Deploying to Cloudflare Workers...');
     execSync(`CRON_TRIGGER_TOKEN=${CRON_TRIGGER_TOKEN} npx wrangler deploy src/index.js`, { stdio: 'inherit' });
     
-    // Get worker name
-    const workerInfo = JSON.parse(execSync('npx wrangler whoami --json', { encoding: 'utf8' }));
-    const workerName = workerInfo.name;
-
     console.log('\nDeployment successful!');
     console.log(`CRON_TRIGGER_TOKEN: ${CRON_TRIGGER_TOKEN}`);
     console.log(`Worker Name: ${workerName}`);
