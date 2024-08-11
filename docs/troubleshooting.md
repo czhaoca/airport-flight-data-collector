@@ -11,10 +11,10 @@ This guide will help you troubleshoot common issues with the Airport Flight Data
 - Worker doesn't appear in Cloudflare dashboard
 
 **Possible Solutions:**
-- Verify your Cloudflare account ID in `wrangler.toml`
 - Ensure you're logged in with `wrangler login`
 - Check for any syntax errors in your JavaScript files
 - Verify that CLOUDFLARE_SUBDOMAIN is correctly set in your `.env` file
+- Make sure your `wrangler.toml` file is correctly configured
 
 ### 2. API Requests Fail
 

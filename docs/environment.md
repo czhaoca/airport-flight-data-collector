@@ -17,7 +17,6 @@ Create a `.env` file in the root of your project with the following content:
 GITHUB_USERNAME=your_github_username
 GITHUB_REPO=airport-flight-data-collector
 GITHUB_TOKEN=your_github_personal_access_token
-CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
 CLOUDFLARE_SUBDOMAIN=your_cloudflare_subdomain
 ```
 
@@ -28,8 +27,7 @@ Replace the values with your actual information.
 1. Log in to your Cloudflare account
 2. Navigate to the Workers section
 3. Create a new Worker or use an existing one
-4. Note down your Cloudflare Account ID
-5. Identify your Cloudflare Subdomain:
+4. Identify your Cloudflare Subdomain:
    - Look at the URL of any of your existing workers
    - It will be in the format: `https://worker-name.your-subdomain.workers.dev`
    - The part between `worker-name` and `workers.dev` is your subdomain

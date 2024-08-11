@@ -37,18 +37,22 @@ This guide will walk you through setting up the Airport Flight Data Collector pr
    - Log in to your Cloudflare account
    - Navigate to the Workers section
    - Create a new Worker or use an existing one
-   - Note down your Cloudflare Account ID and add it to the `.env` file
    - Identify your Cloudflare Subdomain:
      - Look at the URL of any of your existing workers
      - It will be in the format: `https://worker-name.your-subdomain.workers.dev`
      - The part between `worker-name` and `workers.dev` is your subdomain
    - Add your Cloudflare Subdomain to the `.env` file
 
-5. Configure GitHub:
-   - Log in to your GitHub account
-   - Go to Settings > Developer settings > Personal access tokens
-   - Generate a new token with 'repo' scope
-   - Copy the token and add it to your `.env` file
+5. Update `wrangler.toml`:
+   Ensure your `wrangler.toml` file has the correct configuration:
+   ```toml
+   name = "airport-flight-data-collector"
+   main = "src/index.js"
+   compatibility_date = "2023-05-18"
+
+   [triggers]
+   crons = ["0 14 * * *"]  # Runs daily at 14:00 UTC (adjust as needed)
+   ```
 
 6. Update `wrangler.toml`:
    Ensure your `wrangler.toml` file has the correct configuration, including your account ID and Worker name.
