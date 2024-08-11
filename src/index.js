@@ -19,7 +19,7 @@ async function handleRequest(request) {
   const url = new URL(request.url);
   if (url.pathname === '/trigger-cron') {
     const authHeader = request.headers.get('Authorization');
-    if (authHeader !== `Bearer ${CRON_TRIGGER_TOKEN}`) {
+    if (!CRON_TRIGGER_TOKEN || authHeader !== `Bearer ${CRON_TRIGGER_TOKEN}`) {
       return new Response('Unauthorized', { status: 401 });
     }
     const result = await handleScheduled(new Date(), TEST_SCHEDULE);

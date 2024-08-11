@@ -17,8 +17,11 @@ async function simulateCron() {
 
   // Deploy to Cloudflare Workers
   try {
+    console.log('Setting CRON_TRIGGER_TOKEN as a secret...');
+    execSync(`echo ${CRON_TRIGGER_TOKEN} | npx wrangler secret put CRON_TRIGGER_TOKEN`, { stdio: 'inherit' });
+
     console.log('Deploying to Cloudflare Workers...');
-    execSync(`CRON_TRIGGER_TOKEN=${CRON_TRIGGER_TOKEN} npx wrangler deploy src/index.js`, { stdio: 'inherit' });
+    execSync(`npx wrangler deploy src/index.js`, { stdio: 'inherit' });
     
     console.log('\nDeployment successful!');
     console.log(`CRON_TRIGGER_TOKEN: ${CRON_TRIGGER_TOKEN}`);
