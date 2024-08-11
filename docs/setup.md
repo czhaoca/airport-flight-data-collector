@@ -29,6 +29,7 @@ This guide will walk you through setting up the Airport Flight Data Collector pr
    GITHUB_REPO=airport-flight-data-collector
    GITHUB_TOKEN=your_github_personal_access_token
    CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
+   CLOUDFLARE_SUBDOMAIN=your_cloudflare_subdomain
    ```
    Replace the values with your actual information.
 
@@ -37,6 +38,11 @@ This guide will walk you through setting up the Airport Flight Data Collector pr
    - Navigate to the Workers section
    - Create a new Worker or use an existing one
    - Note down your Cloudflare Account ID and add it to the `.env` file
+   - Identify your Cloudflare Subdomain:
+     - Look at the URL of any of your existing workers
+     - It will be in the format: `https://worker-name.your-subdomain.workers.dev`
+     - The part between `worker-name` and `workers.dev` is your subdomain
+   - Add your Cloudflare Subdomain to the `.env` file
 
 5. Configure GitHub:
    - Log in to your GitHub account

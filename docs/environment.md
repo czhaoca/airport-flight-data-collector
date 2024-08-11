@@ -18,6 +18,7 @@ GITHUB_USERNAME=your_github_username
 GITHUB_REPO=airport-flight-data-collector
 GITHUB_TOKEN=your_github_personal_access_token
 CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
+CLOUDFLARE_SUBDOMAIN=your_cloudflare_subdomain
 ```
 
 Replace the values with your actual information.
@@ -28,11 +29,10 @@ Replace the values with your actual information.
 2. Navigate to the Workers section
 3. Create a new Worker or use an existing one
 4. Note down your Cloudflare Account ID
-
-To find your Cloudflare Account ID:
-- Go to the Cloudflare dashboard
-- Click on "Workers & Pages"
-- Your Account ID will be visible in the right sidebar
+5. Identify your Cloudflare Subdomain:
+   - Look at the URL of any of your existing workers
+   - It will be in the format: `https://worker-name.your-subdomain.workers.dev`
+   - The part between `worker-name` and `workers.dev` is your subdomain
 
 ## GitHub Setup
 

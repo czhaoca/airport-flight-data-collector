@@ -14,6 +14,7 @@ This guide will help you troubleshoot common issues with the Airport Flight Data
 - Verify your Cloudflare account ID in `wrangler.toml`
 - Ensure you're logged in with `wrangler login`
 - Check for any syntax errors in your JavaScript files
+- Verify that CLOUDFLARE_SUBDOMAIN is correctly set in your `.env` file
 
 ### 2. API Requests Fail
 
@@ -54,7 +55,7 @@ This guide will help you troubleshoot common issues with the Airport Flight Data
    Always start by checking the Cloudflare Workers logs in the dashboard.
 
 2. **Verify Environment Variables:**
-   Ensure all required environment variables are set correctly.
+   Ensure all required environment variables are set correctly, including CLOUDFLARE_SUBDOMAIN.
 
 3. **Test API Endpoints:**
    Use tools like Postman or curl to test API endpoints directly.
