@@ -1,8 +1,20 @@
 const { fetchAndUpload } = require('../utils/fetch_and_upload');
+const { truncateData } = require('../utils/data_truncator');
+const { pushToGitHub } = require('../utils/github_push');
 
-async function fetchSFOData(date) {
+async function fetchSFOData(date, isTestRun = false) {
   const url = `https://www.flysfo.com/flysfo/api/flight-status?date=${date}`;
-  return fetchAndUpload(url, date, 'sfo_flight_status');
+  let data = await fetchAndUpload(url, date, 'sfo_flight_status', isTestRun);
+  
+  // Check if data needs to be truncated
+  if (JSON.stringify(data).length > 100 * 1024 * 1024) {
+    console.warn('SFO data exceeds size limit. Truncating...');
+    const batchCount = truncateData(data.flights, 'sfo_flight_status', date, 
+      (batchData, batchDate, batchFileName) => pushToGitHub(batchData, batchDate, batchFileName, isTestRun));
+    return { message: `Data truncated into ${batchCount} batches.` };
+  }
+  
+  return data;
 }
 
 module.exports = { fetchSFOData };

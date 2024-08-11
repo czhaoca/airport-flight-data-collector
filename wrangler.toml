@@ -3,5 +3,8 @@ main = "src/index.js"
 compatibility_date = "2023-05-18"
 node_compat = true
 
+[vars]
+TEST_MODE = "false"
+
 [triggers]
-crons = ["0 14 * * *"]  # Runs daily at 14:00 UTC (adjust as needed)
+crons = ["0 14 * * *", "*/5 * * * *"]

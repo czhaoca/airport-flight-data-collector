@@ -11,16 +11,17 @@ global.IS_TEST_ENVIRONMENT = true;
 
 async function runTests() {
   const date = new Date().toISOString().split('T')[0];
+  const isTestRun = true;
   
   try {
     console.log('Testing YYZ Departure Data...');
-    await fetchYYZDepartureData(date);
+    await fetchYYZDepartureData(date, isTestRun);
     
     console.log('Testing YYZ Arrival Data...');
-    await fetchYYZArrivalData(date);
+    await fetchYYZArrivalData(date, isTestRun);
     
     console.log('Testing SFO Data...');
-    await fetchSFOData(date);
+    await fetchSFOData(date, isTestRun);
     
     console.log('All tests passed successfully!');
   } catch (error) {
