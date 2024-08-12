@@ -1,20 +1,17 @@
 {
-  "name": "airport-flight-data-collector",
+  "name": "airport-data",
   "version": "1.0.0",
-  "description": "Cloudflare Worker to collect flight data from multiple airports",
-  "main": "src/index.js",
+  "description": "Collect and store flight data from multiple airports",
+  "main": "index.js",
   "scripts": {
-    "test": "node src/test/run_tests.js",
-    "test:cron": "node src/test/simulate_cron.js",
-    "deploy": "wrangler deploy src/index.js"
+    "collect:sfo": "node src/collect_sfo_data.js",
+    "collect:yyz": "node src/collect_yyz_data.js",
+    "collect": "npm run collect:sfo && npm run collect:yyz",
+    "test:sfo": "node src/collect_sfo_data.js --test",
+    "test:yyz": "node src/collect_yyz_data.js --test",
+    "test": "npm run test:sfo && npm run test:yyz"
   },
-  "author": "Chao Zhao",
-  "license": "MIT",
   "dependencies": {
-    "toml": "^3.0.0"
-  },
-  "devDependencies": {
-    "dotenv": "^10.0.0",
-    "wrangler": "^3.0.0"
+    "node-fetch": "^2.6.1"
   }
 }
