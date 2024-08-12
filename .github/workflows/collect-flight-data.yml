@@ -1,0 +1,36 @@
+name: Collect Flight Data
+
+on:
+  schedule:
+    - cron: '0 11 * * *'  # 6 AM EST (11:00 UTC)
+    - cron: '0 14 * * *'  # 6 AM PST (14:00 UTC)
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  collect-yyz-data:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 11 * * *' || github.event_name == 'workflow_dispatch'
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+    - name: Install dependencies
+      run: npm ci
+    - name: Collect YYZ Data
+      run: npm run collect:yyz
+
+  collect-sfo-data:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 14 * * *' || github.event_name == 'workflow_dispatch'
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+    - name: Install dependencies
+      run: npm ci
+    - name: Collect SFO Data
+      run: npm run collect:sfo

@@ -1,23 +1,2 @@
-# Node modules
 node_modules/
-
-# Logs
-*.log
-
-# Environment variables
 .env
-
-# Cloudflare Worker build output
-dist/
-
-# Test token
-test_token.txt
-
-# macOS
-.DS_Store
-
-# Editor directories and files
-.idea/
-.vscode/
-*.swp
-*.swo
