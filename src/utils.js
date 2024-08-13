@@ -33,10 +33,11 @@ async function saveToGitHub(data, filePath) {
 
   try {
     const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+    const fullPath = `data/${filePath}`;
     await octokit.repos.createOrUpdateFileContents({
       owner,
       repo,
-      path: filePath,
+      path: fullPath,
       message: `Add flight data for ${filePath}`,
       content: content,
       committer: {
@@ -48,7 +49,7 @@ async function saveToGitHub(data, filePath) {
         email: '68087157+czhaoca@users.noreply.github.com'
       }
     });
-    console.log(`Data saved to GitHub: ${filePath}`);
+    console.log(`Data saved to GitHub: ${fullPath}`);
   } catch (error) {
     console.error('Error saving to GitHub:', error);
     throw error;
