@@ -15,12 +15,27 @@ This project collects daily flight data from San Francisco International Airport
 
 1. Fork this repository to your GitHub account.
 
-2. Set up GitHub Actions:
+2. Create a Personal Access Token (PAT):
+   - Go to your GitHub account settings
+   - Click on "Developer settings" > "Personal access tokens" > "Generate new token"
+   - Give it a descriptive name (e.g., "Airport Data Collector")
+   - Select the "repo" scope to grant full control of private repositories
+   - Click "Generate token" and copy the token
+
+3. Add the PAT as a secret in your repository:
+   - Go to your repository settings
+   - Click on "Secrets and variables" > "Actions"
+   - Click "New repository secret"
+   - Name: `PAT_GITHUB`
+   - Value: Paste the Personal Access Token you just created
+   - Click "Add secret"
+
+4. Set up GitHub Actions:
    - Go to your forked repository on GitHub
    - Click on the "Actions" tab
    - You should see the "Collect Flight Data" workflow. If asked, enable GitHub Actions for this repository.
 
-3. The workflow will now run automatically every day at the specified times. You can also trigger it manually:
+5. The workflow will now run automatically every day at the specified times. You can also trigger it manually:
    - Go to the "Actions" tab
    - Click on "Collect Flight Data" in the left sidebar
    - Click the "Run workflow" button
@@ -28,9 +43,9 @@ This project collects daily flight data from San Francisco International Airport
 ## Data Storage
 
 When running via GitHub Actions, collected data is stored in the `data` folder of the repository:
-- SFO data: `data/sfo/flights_YYYY-MM-DD.json`
-- YYZ departures: `data/yyz/departures_YYYY-MM-DD.json`
-- YYZ arrivals: `data/yyz/arrivals_YYYY-MM-DD.json`
+- SFO data: `data/sfo/sfo_flights_YYYY-MM-DD.json`
+- YYZ departures: `data/yyz/yyz_departures_YYYY-MM-DD.json`
+- YYZ arrivals: `data/yyz/yyz_arrivals_YYYY-MM-DD.json`
 
 The date in the filename represents the date of the collected data, which is always the previous day from when the script runs.
 

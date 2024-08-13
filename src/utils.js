@@ -40,12 +40,12 @@ async function saveToGitHub(data, filePath) {
       message: `Add flight data for ${filePath}`,
       content: content,
       committer: {
-        name: 'GitHub Action',
-        email: 'action@github.com'
+        name: 'Chao Zhao',
+        email: '68087157+czhaoca@users.noreply.github.com'
       },
       author: {
-        name: 'GitHub Action',
-        email: 'action@github.com'
+        name: 'Chao Zhao',
+        email: '68087157+czhaoca@users.noreply.github.com'
       }
     });
     console.log(`Data saved to GitHub: ${filePath}`);
