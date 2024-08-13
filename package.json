@@ -12,6 +12,7 @@
     "test": "npm run test:sfo && npm run test:yyz"
   },
   "dependencies": {
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "@octokit/rest": "^18.5.3"
   }
 }
