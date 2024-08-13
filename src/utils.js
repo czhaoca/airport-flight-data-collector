@@ -25,7 +25,7 @@ async function saveData(data, filePath, isTest = false) {
 
 async function saveToGitHub(data, filePath) {
   // This function will only be called in GitHub Actions environment
-  const { Octokit } = require("@octokit/rest");
+  const { Octokit } = await import('@octokit/rest');
   const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN,
   });
