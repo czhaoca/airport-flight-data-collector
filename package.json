@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Collect and store flight data from multiple airports",
   "main": "index.js",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "collect:sfo": "node src/collect_sfo_data.js",
     "collect:yyz": "node src/collect_yyz_data.js",
