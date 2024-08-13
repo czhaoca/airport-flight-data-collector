@@ -12,12 +12,12 @@ async function collectYYZData(isTest = false) {
   try {
     // Collect departure data
     const depData = await fetchData(depUrl);
-    await saveData(depData, `data/yyz/yyz_departures_${date}.json`, isTest);
+    await saveData(depData, `yyz/yyz_departures_${date}.json`, isTest);
     console.log(`YYZ departure data collected and saved successfully for ${date}`);
 
     // Collect arrival data
     const arrData = await fetchData(arrUrl);
-    await saveData(arrData, `data/yyz/yyz_arrivals_${date}.json`, isTest);
+    await saveData(arrData, `yyz/yyz_arrivals_${date}.json`, isTest);
     console.log(`YYZ arrival data collected and saved successfully for ${date}`);
   } catch (error) {
     console.error('Error collecting YYZ data:', error);

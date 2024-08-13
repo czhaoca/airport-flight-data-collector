@@ -10,7 +10,7 @@ async function collectSFOData(isTest = false) {
   
   try {
     const data = await fetchData(url);
-    await saveData(data, `data/sfo/sfo_flights_${date}.json`, isTest);
+    await saveData(data, `sfo/sfo_flights_${date}.json`, isTest);
     console.log(`SFO data collected and saved successfully for ${date}`);
   } catch (error) {
     console.error('Error collecting SFO data:', error);
