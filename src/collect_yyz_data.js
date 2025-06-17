@@ -6,8 +6,10 @@ async function collectYYZData(isTest = false) {
   yesterday.setDate(yesterday.getDate() - 1);
   const date = yesterday.toISOString().split('T')[0];
 
-  const depUrl = `https://gtaa-fl-prod.azureedge.net/api/flights/list?type=DEP&day=yesterday&useScheduleTimeOnly=false`;
-  const arrUrl = `https://gtaa-fl-prod.azureedge.net/api/flights/list?type=ARR&day=yesterday&useScheduleTimeOnly=false`;
+  // const old_depUrl = `https://gtaa-fl-prod.azureedge.net/api/flights/list?type=DEP&day=yesterday&useScheduleTimeOnly=false`;
+  const depUrl = `https://www.torontopearson.com/api/flightsapidata/getflightlist?type=DEP&day=yesterday&useScheduleTimeOnly=false`;
+  // const old_arrUrl = `https://gtaa-fl-prod.azureedge.net/api/flights/list?type=ARR&day=yesterday&useScheduleTimeOnly=false`;
+  const arrUrl = `https://www.torontopearson.com/api/flightsapidata/getflightlist?type=ARR&day=yesterday&useScheduleTimeOnly=false`;
   
   try {
     // Collect departure data
