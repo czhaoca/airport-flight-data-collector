@@ -60,7 +60,27 @@ async function saveToGitHub(data, filePath) {
   try {
     const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
     const fullPath = `data/${filePath}`;
-    await octokit.repos.createOrUpdateFileContents({
+    
+    // Check if file exists to get its SHA for updates
+    let sha;
+    try {
+      const existingFile = await octokit.repos.getContent({
+        owner,
+        repo,
+        path: fullPath,
+      });
+      sha = existingFile.data.sha;
+      console.log(`File exists, updating with SHA: ${sha}`);
+    } catch (getError) {
+      if (getError.status === 404) {
+        console.log('File does not exist, creating new file');
+      } else {
+        console.error('Error checking file existence:', getError);
+        throw getError;
+      }
+    }
+    
+    const updateParams = {
       owner,
       repo,
       path: fullPath,
@@ -74,7 +94,14 @@ async function saveToGitHub(data, filePath) {
         name: 'Chao Zhao',
         email: '68087157+czhaoca@users.noreply.github.com'
       }
-    });
+    };
+    
+    // Add SHA if file exists (for updates)
+    if (sha) {
+      updateParams.sha = sha;
+    }
+    
+    await octokit.repos.createOrUpdateFileContents(updateParams);
     console.log(`Data saved to GitHub: ${fullPath}`);
   } catch (error) {
     console.error('Error saving to GitHub:', error);
