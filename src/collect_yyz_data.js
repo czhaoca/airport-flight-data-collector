@@ -21,6 +21,17 @@ async function collectYYZData(isTest = false) {
     // Use curl directly for departure data
     const depCurlCmd = `curl -s -H "Referer: https://www.torontopearson.com/en/departures" -H "Accept: application/json" "${depUrl}"`;
     const { stdout: depStdout } = await execAsync(depCurlCmd);
+    console.log('Departure response raw data:', depStdout.substring(0, 200) + '...');
+    console.log('Departure response length:', depStdout.length);
+    
+    if (!depStdout || depStdout.trim().length === 0) {
+      throw new Error('Empty response received for departure data');
+    }
+    
+    if (depStdout.trim().startsWith('<')) {
+      throw new Error('Received HTML instead of JSON for departure data. Response: ' + depStdout.substring(0, 500));
+    }
+    
     const depData = JSON.parse(depStdout);
     await saveData(depData, `yyz/yyz_departures_${date}.json`, isTest);
     console.log(`YYZ departure data collected and saved successfully for ${date}`);
@@ -28,6 +39,17 @@ async function collectYYZData(isTest = false) {
     // Use curl directly for arrival data
     const arrCurlCmd = `curl -s -H "Referer: https://www.torontopearson.com/en/arrivals" -H "Accept: application/json" "${arrUrl}"`;
     const { stdout: arrStdout } = await execAsync(arrCurlCmd);
+    console.log('Arrival response raw data:', arrStdout.substring(0, 200) + '...');
+    console.log('Arrival response length:', arrStdout.length);
+    
+    if (!arrStdout || arrStdout.trim().length === 0) {
+      throw new Error('Empty response received for arrival data');
+    }
+    
+    if (arrStdout.trim().startsWith('<')) {
+      throw new Error('Received HTML instead of JSON for arrival data. Response: ' + arrStdout.substring(0, 500));
+    }
+    
     const arrData = JSON.parse(arrStdout);
     await saveData(arrData, `yyz/yyz_arrivals_${date}.json`, isTest);
     console.log(`YYZ arrival data collected and saved successfully for ${date}`);
