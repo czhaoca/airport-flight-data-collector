@@ -1,24 +1,34 @@
-const { fetchData, saveData } = require('./utils');
+const { saveData } = require('./utils');
+const { exec } = require('child_process');
+const { promisify } = require('util');
+const execAsync = promisify(exec);
 
+/**
+ * Collects flight data from Toronto Pearson International Airport (YYZ)
+ * Fetches both departure and arrival data for the previous day
+ * @param {boolean} isTest - Whether to run in test mode
+ * @returns {Promise<void>}
+ */
 async function collectYYZData(isTest = false) {
-  // Get yesterday's date
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const date = yesterday.toISOString().split('T')[0];
+  // Get today's date
+  const today = new Date();
+  const date = today.toISOString().split('T')[0];
 
-  // const old_depUrl = `https://gtaa-fl-prod.azureedge.net/api/flights/list?type=DEP&day=yesterday&useScheduleTimeOnly=false`;
-  const depUrl = `https://www.torontopearson.com/api/flightsapidata/getflightlist?type=DEP&day=yesterday&useScheduleTimeOnly=false`;
-  // const old_arrUrl = `https://gtaa-fl-prod.azureedge.net/api/flights/list?type=ARR&day=yesterday&useScheduleTimeOnly=false`;
-  const arrUrl = `https://www.torontopearson.com/api/flightsapidata/getflightlist?type=ARR&day=yesterday&useScheduleTimeOnly=false`;
+  const depUrl = `https://www.torontopearson.com/api/flightsapidata/getflightlist?type=DEP&day=today&useScheduleTimeOnly=false`;
+  const arrUrl = `https://www.torontopearson.com/api/flightsapidata/getflightlist?type=ARR&day=today&useScheduleTimeOnly=false`;
   
   try {
-    // Collect departure data
-    const depData = await fetchData(depUrl);
+    // Use curl directly for departure data
+    const depCurlCmd = `curl -s -H "Referer: https://www.torontopearson.com/en/departures" -H "Accept: application/json" "${depUrl}"`;
+    const { stdout: depStdout } = await execAsync(depCurlCmd);
+    const depData = JSON.parse(depStdout);
     await saveData(depData, `yyz/yyz_departures_${date}.json`, isTest);
     console.log(`YYZ departure data collected and saved successfully for ${date}`);
 
-    // Collect arrival data
-    const arrData = await fetchData(arrUrl);
+    // Use curl directly for arrival data
+    const arrCurlCmd = `curl -s -H "Referer: https://www.torontopearson.com/en/arrivals" -H "Accept: application/json" "${arrUrl}"`;
+    const { stdout: arrStdout } = await execAsync(arrCurlCmd);
+    const arrData = JSON.parse(arrStdout);
     await saveData(arrData, `yyz/yyz_arrivals_${date}.json`, isTest);
     console.log(`YYZ arrival data collected and saved successfully for ${date}`);
   } catch (error) {

@@ -1,5 +1,10 @@
 const { fetchData, saveData } = require('./utils');
 
+/**
+ * Collects flight data from San Francisco International Airport (SFO)
+ * @param {boolean} isTest - Whether to run in test mode
+ * @returns {Promise<void>}
+ */
 async function collectSFOData(isTest = false) {
   // Get yesterday's date
   const yesterday = new Date();

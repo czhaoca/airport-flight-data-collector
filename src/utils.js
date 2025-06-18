@@ -2,9 +2,21 @@ const fs = require('fs').promises;
 const path = require('path');
 const fetch = require('node-fetch');
 
-async function fetchData(url) {
+/**
+ * Fetches data from a URL with optional headers
+ * @param {string} url - The URL to fetch data from
+ * @param {Object} headers - Optional headers to include in the request
+ * @returns {Promise<Object>} The JSON response data
+ * @throws {Error} If the request fails or returns non-OK status
+ */
+async function fetchData(url, headers = {}) {
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, { 
+      headers,
+      timeout: 30000,
+      follow: 20,
+      compress: true
+    });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -15,6 +27,13 @@ async function fetchData(url) {
   }
 }
 
+/**
+ * Saves data to either GitHub or local filesystem based on environment
+ * @param {Object} data - The data to save
+ * @param {string} filePath - The relative path where to save the file
+ * @param {boolean} isTest - Whether this is a test run
+ * @returns {Promise<void>}
+ */
 async function saveData(data, filePath, isTest = false) {
   if (process.env.GITHUB_ACTIONS) {
     await saveToGitHub(data, filePath);
@@ -23,6 +42,13 @@ async function saveData(data, filePath, isTest = false) {
   }
 }
 
+/**
+ * Saves data to GitHub repository using the Octokit API
+ * @param {Object} data - The data to save
+ * @param {string} filePath - The relative path where to save the file
+ * @returns {Promise<void>}
+ * @throws {Error} If GitHub API call fails
+ */
 async function saveToGitHub(data, filePath) {
   const { Octokit } = await import('@octokit/rest');
   const octokit = new Octokit({
@@ -56,9 +82,17 @@ async function saveToGitHub(data, filePath) {
   }
 }
 
+/**
+ * Saves data to local filesystem
+ * @param {Object} data - The data to save
+ * @param {string} filePath - The relative path where to save the file
+ * @param {boolean} isTest - Whether this is a test run (affects directory and filename)
+ * @returns {Promise<void>}
+ * @throws {Error} If file operations fail
+ */
 async function saveLocally(data, filePath, isTest = false) {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const directory = isTest ? 'data/test' : 'data';
+  const directory = isTest ? 'test/data' : 'data';
   const fileName = isTest ? `${path.basename(filePath, '.json')}-test-${timestamp}.json` : filePath;
   const fullPath = path.join(directory, fileName);
 
