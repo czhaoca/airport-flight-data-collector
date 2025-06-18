@@ -64,18 +64,33 @@ async function saveToGitHub(data, filePath) {
     // Check if file exists to get its SHA for updates
     let sha;
     try {
+      console.log(`Checking if file exists: ${fullPath}`);
       const existingFile = await octokit.repos.getContent({
         owner,
         repo,
         path: fullPath,
       });
+      
+      // Handle both single file and array responses
+      if (Array.isArray(existingFile.data)) {
+        console.log('Received array response - this should not happen for file content');
+        throw new Error('Unexpected array response when checking file existence');
+      }
+      
       sha = existingFile.data.sha;
       console.log(`File exists, updating with SHA: ${sha}`);
+      console.log('Existing file size:', existingFile.data.size);
     } catch (getError) {
       if (getError.status === 404) {
         console.log('File does not exist, creating new file');
+        sha = null;
       } else {
         console.error('Error checking file existence:', getError);
+        console.error('Error details:', {
+          status: getError.status,
+          message: getError.message,
+          url: getError.request?.url
+        });
         throw getError;
       }
     }
@@ -99,7 +114,19 @@ async function saveToGitHub(data, filePath) {
     // Add SHA if file exists (for updates)
     if (sha) {
       updateParams.sha = sha;
+      console.log('Including SHA for file update:', sha);
+    } else {
+      console.log('No SHA - creating new file');
     }
+    
+    console.log('GitHub API request params:', {
+      owner: updateParams.owner,
+      repo: updateParams.repo,
+      path: updateParams.path,
+      message: updateParams.message,
+      hasSha: !!updateParams.sha,
+      contentLength: updateParams.content.length
+    });
     
     await octokit.repos.createOrUpdateFileContents(updateParams);
     console.log(`Data saved to GitHub: ${fullPath}`);

@@ -33,6 +33,12 @@ async function collectYYZData(isTest = false) {
     }
     
     const depData = JSON.parse(depStdout);
+    console.log('=== YYZ DEPARTURE DATA DEBUG ===');
+    console.log('Number of flights:', depData.list ? depData.list.length : 'No list property');
+    console.log('Data structure keys:', Object.keys(depData));
+    console.log('Sample flight (first 3):', JSON.stringify(depData.list ? depData.list.slice(0, 3) : depData, null, 2));
+    console.log('=== END DEBUG ===');
+    
     await saveData(depData, `yyz/yyz_departures_${date}.json`, isTest);
     console.log(`YYZ departure data collected and saved successfully for ${date}`);
 
@@ -51,6 +57,12 @@ async function collectYYZData(isTest = false) {
     }
     
     const arrData = JSON.parse(arrStdout);
+    console.log('=== YYZ ARRIVAL DATA DEBUG ===');
+    console.log('Number of flights:', arrData.list ? arrData.list.length : 'No list property');
+    console.log('Data structure keys:', Object.keys(arrData));
+    console.log('Sample flight (first 3):', JSON.stringify(arrData.list ? arrData.list.slice(0, 3) : arrData, null, 2));
+    console.log('=== END DEBUG ===');
+    
     await saveData(arrData, `yyz/yyz_arrivals_${date}.json`, isTest);
     console.log(`YYZ arrival data collected and saved successfully for ${date}`);
   } catch (error) {
