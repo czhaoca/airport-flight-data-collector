@@ -18,8 +18,8 @@ async function collectYYZData(isTest = false) {
   const arrUrl = `https://www.torontopearson.com/api/flightsapidata/getflightlist?type=ARR&day=today&useScheduleTimeOnly=false`;
   
   try {
-    // Use curl directly for departure data
-    const depCurlCmd = `curl -s -H "Referer: https://www.torontopearson.com/en/departures" -H "Accept: application/json" "${depUrl}"`;
+    // Use curl directly for departure data with proper headers to avoid bot detection
+    const depCurlCmd = `curl -s -L -H "Referer: https://www.torontopearson.com/en/departures" -H "Accept: application/json" -H "User-Agent: Mozilla/5.0 (compatible; DataCollector/1.0)" "${depUrl}"`;
     const { stdout: depStdout } = await execAsync(depCurlCmd);
     console.log('Departure response raw data:', depStdout.substring(0, 200) + '...');
     console.log('Departure response length:', depStdout.length);
@@ -29,7 +29,9 @@ async function collectYYZData(isTest = false) {
     }
     
     if (depStdout.trim().startsWith('<')) {
-      throw new Error('Received HTML instead of JSON for departure data. Response: ' + depStdout.substring(0, 500));
+      console.error('YYZ API returned HTML instead of JSON - API may be blocked or changed');
+      console.error('Departure response preview:', depStdout.substring(0, 500));
+      throw new Error('YYZ API is currently unavailable or blocking requests');
     }
     
     const depData = JSON.parse(depStdout);
@@ -42,8 +44,8 @@ async function collectYYZData(isTest = false) {
     await saveData(depData, `yyz/yyz_departures_${date}.json`, isTest);
     console.log(`YYZ departure data collected and saved successfully for ${date}`);
 
-    // Use curl directly for arrival data
-    const arrCurlCmd = `curl -s -H "Referer: https://www.torontopearson.com/en/arrivals" -H "Accept: application/json" "${arrUrl}"`;
+    // Use curl directly for arrival data with additional headers to avoid redirects
+    const arrCurlCmd = `curl -s -L -H "Referer: https://www.torontopearson.com/en/arrivals" -H "Accept: application/json" -H "User-Agent: Mozilla/5.0 (compatible; DataCollector/1.0)" "${arrUrl}"`;
     const { stdout: arrStdout } = await execAsync(arrCurlCmd);
     console.log('Arrival response raw data:', arrStdout.substring(0, 200) + '...');
     console.log('Arrival response length:', arrStdout.length);
@@ -53,7 +55,10 @@ async function collectYYZData(isTest = false) {
     }
     
     if (arrStdout.trim().startsWith('<')) {
-      throw new Error('Received HTML instead of JSON for arrival data. Response: ' + arrStdout.substring(0, 500));
+      console.warn('Arrival data API returned HTML - possibly blocked or changed. Skipping arrival data collection.');
+      console.log('Arrival response preview:', arrStdout.substring(0, 500));
+      console.log('YYZ departure data collected successfully, but arrival data unavailable');
+      return;
     }
     
     const arrData = JSON.parse(arrStdout);
