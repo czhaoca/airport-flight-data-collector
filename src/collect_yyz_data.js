@@ -5,7 +5,8 @@ const execAsync = promisify(exec);
 
 /**
  * Collects flight data from Toronto Pearson International Airport (YYZ)
- * Fetches both departure and arrival data for the previous day
+ * Fetches both departure and arrival data for the current day
+ * Handles bot protection gracefully by trying multiple strategies
  * @param {boolean} isTest - Whether to run in test mode
  * @returns {Promise<void>}
  */
@@ -46,15 +47,56 @@ async function collectYYZData(isTest = false) {
     await saveData(depData, `yyz/yyz_departures_${date}.json`, isTest);
     console.log(`YYZ departure data collected and saved successfully for ${date}`);
 
-    // Use curl directly for arrival data with additional headers to avoid redirects
-    const arrCurlCmd = `curl -s -L -H "Referer: https://www.torontopearson.com/en/arrivals" -H "Accept: application/json, text/plain, */*" -H "Accept-Language: en-US,en;q=0.9" -H "Cache-Control: no-cache" -H "Pragma: no-cache" -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" -H "Connection: keep-alive" -H "Sec-Fetch-Dest: empty" -H "Sec-Fetch-Mode: cors" -H "Sec-Fetch-Site: same-origin" "${arrUrl}"`;
-    const { stdout: arrStdout } = await execAsync(arrCurlCmd);
+    // Wait 15 seconds before making the second request to avoid triggering bot protection
+    console.log('Waiting 15 seconds before requesting arrival data to avoid rate limiting...');
+    await new Promise(resolve => setTimeout(resolve, 15000));
+
+    // Try multiple strategies for arrival data collection
+    let arrStdout = '';
+    let attemptSuccessful = false;
+    
+    const strategies = [
+      // Strategy 1: Minimal headers with macOS Safari
+      `curl -s -L -H "Referer: https://www.torontopearson.com/en/arrivals" -H "Accept: application/json" -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15" "${arrUrl}"`,
+      
+      // Strategy 2: Different Windows Chrome version
+      `curl -s -L -H "Referer: https://www.torontopearson.com/en/arrivals" -H "Accept: application/json, text/plain, */*" -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" "${arrUrl}"`,
+      
+      // Strategy 3: Firefox user agent
+      `curl -s -L -H "Referer: https://www.torontopearson.com/en/arrivals" -H "Accept: application/json" -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0" "${arrUrl}"`
+    ];
+    
+    for (let i = 0; i < strategies.length && !attemptSuccessful; i++) {
+      console.log(`Trying arrival data collection strategy ${i + 1}/${strategies.length}...`);
+      try {
+        const { stdout } = await execAsync(strategies[i]);
+        if (stdout && !stdout.trim().startsWith('<')) {
+          arrStdout = stdout;
+          attemptSuccessful = true;
+          console.log(`Strategy ${i + 1} successful!`);
+          break;
+        } else {
+          console.log(`Strategy ${i + 1} blocked, trying next...`);
+          if (i < strategies.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds between attempts
+          }
+        }
+      } catch (error) {
+        console.log(`Strategy ${i + 1} failed with error, trying next...`);
+        if (i < strategies.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+      }
+    }
+    
+    if (!attemptSuccessful || !arrStdout || arrStdout.trim().length === 0) {
+      console.warn('All arrival data collection strategies failed. Arrival API appears to be blocked.');
+      console.log('YYZ departure data collected successfully, but arrival data unavailable');
+      return;
+    }
+    
     console.log('Arrival response raw data:', arrStdout.substring(0, 200) + '...');
     console.log('Arrival response length:', arrStdout.length);
-    
-    if (!arrStdout || arrStdout.trim().length === 0) {
-      throw new Error('Empty response received for arrival data');
-    }
     
     if (arrStdout.trim().startsWith('<')) {
       console.warn('Arrival data API returned HTML - possibly blocked or changed. Skipping arrival data collection.');
