@@ -50,7 +50,7 @@ async function saveData(data, filePath, isTest = false) {
  * @throws {Error} If GitHub API call fails
  */
 async function saveToGitHub(data, filePath) {
-  const { Octokit } = await import('@octokit/rest');
+  const { Octokit } = require('@octokit/rest');
   const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN,
   });
