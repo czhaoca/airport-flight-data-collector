@@ -1,0 +1,121 @@
+name: Database Migration
+
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: 'Target database provider'
+        required: true
+        type: choice
+        options:
+          - cloudflare
+          - oci
+      migration_type:
+        description: 'Migration type'
+        required: true
+        type: choice
+        options:
+          - full
+          - recent-only
+          - test
+      airport:
+        description: 'Specific airport (optional)'
+        required: false
+      year:
+        description: 'Specific year (optional)'
+        required: false
+
+jobs:
+  migrate-data:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Setup Environment
+      run: |
+        echo "DB_PROVIDER=${{ github.event.inputs.provider }}" >> $GITHUB_ENV
+        echo "NODE_ENV=production" >> $GITHUB_ENV
+        echo "DB_TABLE_PREFIX=${{ secrets.DB_TABLE_PREFIX || 'airport_flight_data' }}" >> $GITHUB_ENV
+        
+    - name: Configure OCI
+      if: github.event.inputs.provider == 'oci'
+      run: |
+        echo "OCI_USER=${{ secrets.OCI_USER }}" >> $GITHUB_ENV
+        echo "OCI_PASSWORD=${{ secrets.OCI_PASSWORD }}" >> $GITHUB_ENV
+        echo "OCI_CONNECTION_STRING=${{ secrets.OCI_CONNECTION_STRING }}" >> $GITHUB_ENV
+        if [ -n "${{ secrets.OCI_WALLET_BASE64 }}" ]; then
+          # Decode wallet if provided as base64
+          mkdir -p /tmp/wallet
+          echo "${{ secrets.OCI_WALLET_BASE64 }}" | base64 -d > /tmp/wallet.zip
+          unzip /tmp/wallet.zip -d /tmp/wallet
+          echo "OCI_WALLET_LOCATION=/tmp/wallet" >> $GITHUB_ENV
+          echo "OCI_WALLET_PASSWORD=${{ secrets.OCI_WALLET_PASSWORD }}" >> $GITHUB_ENV
+        fi
+        
+    - name: Configure Cloudflare
+      if: github.event.inputs.provider == 'cloudflare'
+      run: |
+        echo "CF_ACCOUNT_ID=${{ secrets.CF_ACCOUNT_ID }}" >> $GITHUB_ENV
+        echo "CF_DATABASE_ID=${{ secrets.CF_DATABASE_ID }}" >> $GITHUB_ENV
+        echo "CF_API_TOKEN=${{ secrets.CF_API_TOKEN }}" >> $GITHUB_ENV
+        if [ -n "${{ secrets.CF_WORKER_URL }}" ]; then
+          echo "CF_WORKER_URL=${{ secrets.CF_WORKER_URL }}" >> $GITHUB_ENV
+        fi
+        
+    - name: Test Database Connection
+      run: node scripts/test-database.js
+      
+    - name: Run Migration (Test Mode)
+      if: github.event.inputs.migration_type == 'test'
+      run: |
+        echo "Running test migration (dry run)..."
+        node scripts/migrate-to-${{ github.event.inputs.provider }}.js --dry-run
+        
+    - name: Run Migration (Recent Only)
+      if: github.event.inputs.migration_type == 'recent-only'
+      run: |
+        ARGS="--recent-only"
+        if [ -n "${{ github.event.inputs.airport }}" ]; then
+          ARGS="$ARGS --airport ${{ github.event.inputs.airport }}"
+        fi
+        if [ -n "${{ github.event.inputs.year }}" ]; then
+          ARGS="$ARGS --year ${{ github.event.inputs.year }}"
+        fi
+        node scripts/migrate-to-${{ github.event.inputs.provider }}.js $ARGS
+        
+    - name: Run Full Migration
+      if: github.event.inputs.migration_type == 'full'
+      run: |
+        ARGS=""
+        if [ -n "${{ github.event.inputs.airport }}" ]; then
+          ARGS="$ARGS --airport ${{ github.event.inputs.airport }}"
+        fi
+        if [ -n "${{ github.event.inputs.year }}" ]; then
+          ARGS="$ARGS --year ${{ github.event.inputs.year }}"
+        fi
+        node scripts/migrate-to-${{ github.event.inputs.provider }}.js $ARGS
+        
+    - name: Generate Migration Report
+      if: always()
+      run: |
+        echo "## Migration Report" > migration-report.md
+        echo "- Provider: ${{ github.event.inputs.provider }}" >> migration-report.md
+        echo "- Type: ${{ github.event.inputs.migration_type }}" >> migration-report.md
+        echo "- Airport: ${{ github.event.inputs.airport || 'all' }}" >> migration-report.md
+        echo "- Year: ${{ github.event.inputs.year || 'all' }}" >> migration-report.md
+        echo "- Timestamp: $(date)" >> migration-report.md
+        
+    - name: Upload Migration Report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: migration-report
+        path: migration-report.md

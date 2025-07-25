@@ -1,0 +1,144 @@
+name: Data Retention and Archival
+
+on:
+  schedule:
+    # Run weekly on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      retention_days:
+        description: 'Days to retain data'
+        required: false
+        default: '365'
+      archive_days:
+        description: 'Days before archiving'
+        required: false
+        default: '90'
+      dry_run:
+        description: 'Dry run mode'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  data-retention:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Setup Database Environment
+      run: |
+        echo "DB_PROVIDER=${{ secrets.DB_PROVIDER || 'local' }}" >> $GITHUB_ENV
+        echo "NODE_ENV=production" >> $GITHUB_ENV
+        echo "DB_TABLE_PREFIX=${{ secrets.DB_TABLE_PREFIX || 'airport_flight_data' }}" >> $GITHUB_ENV
+        
+        # Set retention parameters
+        echo "RETENTION_DAYS=${{ github.event.inputs.retention_days || '365' }}" >> $GITHUB_ENV
+        echo "ARCHIVE_DAYS=${{ github.event.inputs.archive_days || '90' }}" >> $GITHUB_ENV
+        
+    - name: Configure Database Provider
+      run: |
+        if [ "$DB_PROVIDER" = "oci" ]; then
+          echo "OCI_USER=${{ secrets.OCI_USER }}" >> $GITHUB_ENV
+          echo "OCI_PASSWORD=${{ secrets.OCI_PASSWORD }}" >> $GITHUB_ENV
+          echo "OCI_CONNECTION_STRING=${{ secrets.OCI_CONNECTION_STRING }}" >> $GITHUB_ENV
+        elif [ "$DB_PROVIDER" = "cloudflare" ]; then
+          echo "CF_ACCOUNT_ID=${{ secrets.CF_ACCOUNT_ID }}" >> $GITHUB_ENV
+          echo "CF_DATABASE_ID=${{ secrets.CF_DATABASE_ID }}" >> $GITHUB_ENV
+          echo "CF_API_TOKEN=${{ secrets.CF_API_TOKEN }}" >> $GITHUB_ENV
+        fi
+        
+    - name: Run Data Retention (Dry Run)
+      if: github.event.inputs.dry_run == 'true'
+      run: |
+        node scripts/data-retention.js --dry-run --verbose
+        
+    - name: Run Data Retention
+      if: github.event.inputs.dry_run != 'true'
+      run: |
+        node scripts/data-retention.js --verbose
+        
+    - name: Upload Archives to Artifact
+      if: github.event.inputs.dry_run != 'true'
+      uses: actions/upload-artifact@v3
+      with:
+        name: data-archives-${{ github.run_id }}
+        path: archives/
+        retention-days: 30
+        
+    - name: Generate Retention Report
+      if: always()
+      run: |
+        echo "## Data Retention Report" > retention-report.md
+        echo "- Date: $(date)" >> retention-report.md
+        echo "- Provider: $DB_PROVIDER" >> retention-report.md
+        echo "- Retention Days: $RETENTION_DAYS" >> retention-report.md
+        echo "- Archive Days: $ARCHIVE_DAYS" >> retention-report.md
+        echo "- Dry Run: ${{ github.event.inputs.dry_run || 'false' }}" >> retention-report.md
+        
+        # Add database stats if available
+        node -e "
+        const { getDatabase } = require('./lib/database');
+        (async () => {
+          try {
+            const db = await getDatabase();
+            const health = await db.healthCheck();
+            console.log('\\n### Database Status');
+            console.log('- Status:', health.status);
+            if (health.adapterStatus && health.adapterStatus.storage) {
+              console.log('- Storage:', JSON.stringify(health.adapterStatus.storage));
+            }
+            await db.disconnect();
+          } catch (error) {
+            console.log('\\n### Database Status');
+            console.log('- Error:', error.message);
+          }
+        })();
+        " >> retention-report.md
+        
+    - name: Upload Retention Report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: retention-report-${{ github.run_id }}
+        path: retention-report.md
+        
+    - name: Commit Archive Changes (Local Provider)
+      if: |
+        github.event.inputs.dry_run != 'true' && 
+        env.DB_PROVIDER == 'local'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add -A archives/
+        git diff --staged --quiet || git commit -m "Archive old flight data [skip ci]"
+        git push || echo "No changes to push"
+
+  cloudflare-storage-check:
+    runs-on: ubuntu-latest
+    if: ${{ secrets.DB_PROVIDER == 'cloudflare' }}
+    needs: data-retention
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Check Cloudflare Storage
+      run: |
+        # Check D1 storage usage via API
+        curl -X GET \
+          "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_ACCOUNT_ID }}/d1/database/${{ secrets.CF_DATABASE_ID }}" \
+          -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          | jq '.result.size_in_bytes' || echo "Unable to get storage size"
+          
+    - name: Alert on High Usage
+      run: |
+        # This would integrate with your alerting system
+        echo "Check Cloudflare D1 dashboard for storage usage"

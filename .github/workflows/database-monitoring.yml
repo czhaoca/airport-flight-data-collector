@@ -1,0 +1,154 @@
+name: Database Monitoring
+
+on:
+  schedule:
+    # Run every hour
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  monitor-database:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Setup Database Environment
+      run: |
+        echo "DB_PROVIDER=${{ secrets.DB_PROVIDER || 'local' }}" >> $GITHUB_ENV
+        echo "NODE_ENV=production" >> $GITHUB_ENV
+        echo "DB_TABLE_PREFIX=${{ secrets.DB_TABLE_PREFIX || 'airport_flight_data' }}" >> $GITHUB_ENV
+        
+    - name: Configure Database Provider
+      run: |
+        if [ "$DB_PROVIDER" = "oci" ]; then
+          echo "OCI_USER=${{ secrets.OCI_USER }}" >> $GITHUB_ENV
+          echo "OCI_PASSWORD=${{ secrets.OCI_PASSWORD }}" >> $GITHUB_ENV
+          echo "OCI_CONNECTION_STRING=${{ secrets.OCI_CONNECTION_STRING }}" >> $GITHUB_ENV
+        elif [ "$DB_PROVIDER" = "cloudflare" ]; then
+          echo "CF_ACCOUNT_ID=${{ secrets.CF_ACCOUNT_ID }}" >> $GITHUB_ENV
+          echo "CF_DATABASE_ID=${{ secrets.CF_DATABASE_ID }}" >> $GITHUB_ENV
+          echo "CF_API_TOKEN=${{ secrets.CF_API_TOKEN }}" >> $GITHUB_ENV
+        fi
+        
+    - name: Run Monitoring Check
+      id: monitor
+      run: |
+        node scripts/monitor.js --check-once > monitor-results.json
+        cat monitor-results.json
+        
+        # Extract alert count
+        ALERT_COUNT=$(jq '.alerts | length' monitor-results.json)
+        echo "alert_count=$ALERT_COUNT" >> $GITHUB_OUTPUT
+        
+        # Set job status based on alerts
+        if [ "$ALERT_COUNT" -gt 0 ]; then
+          echo "::warning::Database monitoring detected $ALERT_COUNT alerts"
+        fi
+        
+    - name: Upload Monitoring Results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: monitor-results-${{ github.run_id }}
+        path: monitor-results.json
+        
+    - name: Send Slack Notification (if configured)
+      if: steps.monitor.outputs.alert_count > 0 && secrets.SLACK_WEBHOOK_URL
+      run: |
+        ALERTS=$(jq -r '.alerts[] | "• \(.check): \(.status) - \(.details.message // .details.error // "Check details in artifact")"' monitor-results.json)
+        
+        curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          -H 'Content-Type: application/json' \
+          -d @- << EOF
+        {
+          "text": "Database Monitoring Alert",
+          "blocks": [
+            {
+              "type": "header",
+              "text": {
+                "type": "plain_text",
+                "text": "🚨 Database Monitoring Alert"
+              }
+            },
+            {
+              "type": "section",
+              "text": {
+                "type": "mrkdwn",
+                "text": "The database monitoring check detected *${{ steps.monitor.outputs.alert_count }}* alerts:"
+              }
+            },
+            {
+              "type": "section",
+              "text": {
+                "type": "mrkdwn",
+                "text": "$ALERTS"
+              }
+            },
+            {
+              "type": "actions",
+              "elements": [
+                {
+                  "type": "button",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "View Details"
+                  },
+                  "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                }
+              ]
+            }
+          ]
+        }
+        EOF
+        
+    - name: Create Issue for Critical Alerts
+      if: steps.monitor.outputs.alert_count > 2
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const results = JSON.parse(fs.readFileSync('monitor-results.json', 'utf8'));
+          
+          const issueBody = `## Database Monitoring Alert
+          
+          The monitoring check detected ${results.alerts.length} alerts:
+          
+          ${results.alerts.map(a => `- **${a.check}**: ${a.status} - ${JSON.stringify(a.details)}`).join('\n')}
+          
+          [View workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+          
+          ---
+          *This issue was automatically created by the database monitoring workflow.*`;
+          
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `Database Monitoring Alert - ${results.alerts.length} issues detected`,
+            body: issueBody,
+            labels: ['monitoring', 'database', 'automated']
+          });
+          
+  summary-report:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    needs: monitor-database
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Generate Summary Report
+      run: |
+        echo "# Database Monitoring Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Time**: $(date)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Provider**: ${{ env.DB_PROVIDER || 'local' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Status**: Check completed" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "View detailed results in the workflow artifacts." >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,7 @@
+{
+  "flight_id": "test_arrival_2025-07-25_1753463235231",
+  "status": "DELAYED",
+  "status_time": "2025-07-25T17:07:15.237Z",
+  "reason": "Test update",
+  "updated_at": "2025-07-25T17:07:15.237Z"
+}

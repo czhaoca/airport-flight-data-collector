@@ -1,0 +1,205 @@
+name: Collect Flight Data (Database)
+
+on:
+  schedule:
+    - cron: '55 4 * * *'  # 11:55 PM EST (4:55 UTC) for YYZ
+    - cron: '0 14 * * *'  # 6 AM PST (14:00 UTC) for SFO
+  workflow_dispatch:  # Allows manual triggering
+    inputs:
+      airport:
+        description: 'Airport to collect (yyz, sfo, or all)'
+        required: false
+        default: 'all'
+      db_provider:
+        description: 'Database provider (local, oci, cloudflare)'
+        required: false
+        default: 'local'
+
+jobs:
+  collect-yyz-data:
+    runs-on: ubuntu-latest
+    if: |
+      (github.event.schedule == '55 4 * * *' || 
+       (github.event_name == 'workflow_dispatch' && 
+        (github.event.inputs.airport == 'yyz' || github.event.inputs.airport == 'all')))
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Setup Database Environment
+      run: |
+        echo "Setting up database environment..."
+        echo "DB_PROVIDER=${{ github.event.inputs.db_provider || secrets.DB_PROVIDER || 'local' }}" >> $GITHUB_ENV
+        echo "NODE_ENV=production" >> $GITHUB_ENV
+        echo "DB_TABLE_PREFIX=${{ secrets.DB_TABLE_PREFIX || 'airport_flight_data' }}" >> $GITHUB_ENV
+        
+    - name: Configure OCI (if applicable)
+      if: env.DB_PROVIDER == 'oci'
+      run: |
+        echo "OCI_USER=${{ secrets.OCI_USER }}" >> $GITHUB_ENV
+        echo "OCI_PASSWORD=${{ secrets.OCI_PASSWORD }}" >> $GITHUB_ENV
+        echo "OCI_CONNECTION_STRING=${{ secrets.OCI_CONNECTION_STRING }}" >> $GITHUB_ENV
+        if [ -n "${{ secrets.OCI_WALLET_LOCATION }}" ]; then
+          echo "OCI_WALLET_LOCATION=${{ secrets.OCI_WALLET_LOCATION }}" >> $GITHUB_ENV
+          echo "OCI_WALLET_PASSWORD=${{ secrets.OCI_WALLET_PASSWORD }}" >> $GITHUB_ENV
+        fi
+        
+    - name: Configure Cloudflare (if applicable)
+      if: env.DB_PROVIDER == 'cloudflare'
+      run: |
+        echo "CF_ACCOUNT_ID=${{ secrets.CF_ACCOUNT_ID }}" >> $GITHUB_ENV
+        echo "CF_DATABASE_ID=${{ secrets.CF_DATABASE_ID }}" >> $GITHUB_ENV
+        echo "CF_API_TOKEN=${{ secrets.CF_API_TOKEN }}" >> $GITHUB_ENV
+        if [ -n "${{ secrets.CF_WORKER_URL }}" ]; then
+          echo "CF_WORKER_URL=${{ secrets.CF_WORKER_URL }}" >> $GITHUB_ENV
+        fi
+        
+    - name: Test Database Connection
+      run: node scripts/test-database.js
+      continue-on-error: true
+      
+    - name: Collect YYZ Data
+      run: npm run collect:yyz
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
+        
+    - name: Upload logs on failure
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: yyz-collection-logs
+        path: |
+          *.log
+          data/yyz/*.error
+
+  collect-sfo-data:
+    runs-on: ubuntu-latest
+    if: |
+      (github.event.schedule == '0 14 * * *' || 
+       (github.event_name == 'workflow_dispatch' && 
+        (github.event.inputs.airport == 'sfo' || github.event.inputs.airport == 'all')))
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Setup Database Environment
+      run: |
+        echo "Setting up database environment..."
+        echo "DB_PROVIDER=${{ github.event.inputs.db_provider || secrets.DB_PROVIDER || 'local' }}" >> $GITHUB_ENV
+        echo "NODE_ENV=production" >> $GITHUB_ENV
+        echo "DB_TABLE_PREFIX=${{ secrets.DB_TABLE_PREFIX || 'airport_flight_data' }}" >> $GITHUB_ENV
+        
+    - name: Configure OCI (if applicable)
+      if: env.DB_PROVIDER == 'oci'
+      run: |
+        echo "OCI_USER=${{ secrets.OCI_USER }}" >> $GITHUB_ENV
+        echo "OCI_PASSWORD=${{ secrets.OCI_PASSWORD }}" >> $GITHUB_ENV
+        echo "OCI_CONNECTION_STRING=${{ secrets.OCI_CONNECTION_STRING }}" >> $GITHUB_ENV
+        if [ -n "${{ secrets.OCI_WALLET_LOCATION }}" ]; then
+          echo "OCI_WALLET_LOCATION=${{ secrets.OCI_WALLET_LOCATION }}" >> $GITHUB_ENV
+          echo "OCI_WALLET_PASSWORD=${{ secrets.OCI_WALLET_PASSWORD }}" >> $GITHUB_ENV
+        fi
+        
+    - name: Configure Cloudflare (if applicable)
+      if: env.DB_PROVIDER == 'cloudflare'
+      run: |
+        echo "CF_ACCOUNT_ID=${{ secrets.CF_ACCOUNT_ID }}" >> $GITHUB_ENV
+        echo "CF_DATABASE_ID=${{ secrets.CF_DATABASE_ID }}" >> $GITHUB_ENV
+        echo "CF_API_TOKEN=${{ secrets.CF_API_TOKEN }}" >> $GITHUB_ENV
+        if [ -n "${{ secrets.CF_WORKER_URL }}" ]; then
+          echo "CF_WORKER_URL=${{ secrets.CF_WORKER_URL }}" >> $GITHUB_ENV
+        fi
+        
+    - name: Test Database Connection
+      run: node scripts/test-database.js
+      continue-on-error: true
+      
+    - name: Collect SFO Data
+      run: npm run collect:sfo
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
+        
+    - name: Upload logs on failure
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: sfo-collection-logs
+        path: |
+          *.log
+          data/sfo/*.error
+
+  database-health-check:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    needs: [collect-yyz-data, collect-sfo-data]
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Setup Database Environment
+      run: |
+        echo "DB_PROVIDER=${{ github.event.inputs.db_provider || secrets.DB_PROVIDER || 'local' }}" >> $GITHUB_ENV
+        echo "NODE_ENV=production" >> $GITHUB_ENV
+        echo "DB_TABLE_PREFIX=${{ secrets.DB_TABLE_PREFIX || 'airport_flight_data' }}" >> $GITHUB_ENV
+        
+    - name: Configure Database Provider
+      run: |
+        if [ "$DB_PROVIDER" = "oci" ]; then
+          echo "OCI_USER=${{ secrets.OCI_USER }}" >> $GITHUB_ENV
+          echo "OCI_PASSWORD=${{ secrets.OCI_PASSWORD }}" >> $GITHUB_ENV
+          echo "OCI_CONNECTION_STRING=${{ secrets.OCI_CONNECTION_STRING }}" >> $GITHUB_ENV
+        elif [ "$DB_PROVIDER" = "cloudflare" ]; then
+          echo "CF_ACCOUNT_ID=${{ secrets.CF_ACCOUNT_ID }}" >> $GITHUB_ENV
+          echo "CF_DATABASE_ID=${{ secrets.CF_DATABASE_ID }}" >> $GITHUB_ENV
+          echo "CF_API_TOKEN=${{ secrets.CF_API_TOKEN }}" >> $GITHUB_ENV
+        fi
+        
+    - name: Run Database Health Check
+      run: |
+        node -e "
+        const { getDatabase } = require('./lib/database');
+        (async () => {
+          const db = await getDatabase();
+          const health = await db.healthCheck();
+          console.log('Database Health:', JSON.stringify(health, null, 2));
+          
+          // Get recent data stats
+          const endDate = new Date().toISOString().split('T')[0];
+          const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+          
+          const recentData = await db.getFlightData({
+            startDate,
+            endDate,
+            filters: { limit: 100 }
+          });
+          
+          console.log('\\nRecent Data Summary:');
+          console.log('- Total records (last 7 days):', recentData.length);
+          
+          const airports = [...new Set(recentData.map(r => r.airport_code))];
+          console.log('- Airports:', airports.join(', '));
+          
+          await db.disconnect();
+        })().catch(console.error);
+        "

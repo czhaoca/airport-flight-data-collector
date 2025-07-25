@@ -1,0 +1,47 @@
+name = "airport-flight-data-api"
+main = "flight-data-api.js"
+compatibility_date = "2024-01-01"
+
+# Account ID will be filled from environment
+account_id = "${CLOUDFLARE_ACCOUNT_ID}"
+
+# Development environment
+[env.development]
+vars = { 
+  ENVIRONMENT = "development",
+  FLIGHTS_TABLE = "airport_flight_data_dev_flights",
+  STATUS_TABLE = "airport_flight_data_dev_flight_status_history"
+}
+
+[[env.development.d1_databases]]
+binding = "DB"
+database_name = "airport-flight-data-dev"
+database_id = "${CF_DATABASE_ID_DEV}"
+
+# Production environment
+[env.production]
+vars = { 
+  ENVIRONMENT = "production",
+  FLIGHTS_TABLE = "airport_flight_data_prod_flights",
+  STATUS_TABLE = "airport_flight_data_prod_flight_status_history"
+}
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "airport-flight-data"
+database_id = "${CF_DATABASE_ID}"
+
+# Secrets (set via wrangler secret)
+# API_TOKEN - Bearer token for API authentication
+
+# Routes (optional - if you have a custom domain)
+# route = "api.yourdomain.com/*"
+
+# Limits
+[limits]
+cpu_ms = 50
+
+# Build configuration
+[build]
+command = ""
+upload.format = "service-worker"
