@@ -1,30 +1,33 @@
-const { fetchData, saveData } = require('./utils');
+#!/usr/bin/env node
 
 /**
- * Collects flight data from San Francisco International Airport (SFO)
- * @param {boolean} isTest - Whether to run in test mode
- * @returns {Promise<void>}
+ * Backward compatibility wrapper for SFO data collection
+ * This file maintains compatibility with existing scripts and GitHub Actions
  */
-async function collectSFOData(isTest = false) {
-  // Get yesterday's date
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const date = yesterday.toISOString().split('T')[0];
 
-  const url = `https://www.flysfo.com/flysfo/api/flight-status`;
-  
+const ServiceContainer = require('./application/services/ServiceContainer');
+
+async function collectSFOData(isTest = false) {
   try {
-    const data = await fetchData(url);
-    await saveData(data, `sfo/sfo_flights_${date}.json`, isTest);
-    console.log(`SFO data collected and saved successfully for ${date}`);
+    const container = ServiceContainer.createDefault();
+    container.get('config').validate();
+    
+    const collectorService = container.get('collectorService');
+    const result = await collectorService.collect('SFO', { isTest });
+    
+    if (!result.isSuccess()) {
+      throw new Error(result.error);
+    }
   } catch (error) {
     console.error('Error collecting SFO data:', error);
     process.exit(1);
   }
 }
 
+// Run if called directly
 if (require.main === module) {
-  collectSFOData(process.argv.includes('--test'));
+  const isTest = process.argv.includes('--test');
+  collectSFOData(isTest);
 }
 
 module.exports = { collectSFOData };

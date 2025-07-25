@@ -9,12 +9,15 @@
   "scripts": {
     "collect:sfo": "node src/collect_sfo_data.js",
     "collect:yyz": "node src/collect_yyz_data.js",
-    "collect": "npm run collect:sfo && npm run collect:yyz",
+    "collect": "node src/application/commands/collect.js",
     "test:sfo": "node src/collect_sfo_data.js --test",
     "test:yyz": "node src/collect_yyz_data.js --test",
-    "test": "npm run test:sfo && npm run test:yyz",
+    "test": "node src/application/commands/collect.js --test",
     "test:unit": "jest",
-    "test:unit:watch": "jest --watch"
+    "test:unit:watch": "jest --watch",
+    "collect:new": "node src/application/commands/collect.js",
+    "collect:new:sfo": "node src/application/commands/collect.js SFO",
+    "collect:new:yyz": "node src/application/commands/collect.js YYZ"
   },
   "dependencies": {
     "@octokit/rest": "^18.5.3",

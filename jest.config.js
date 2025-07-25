@@ -2,11 +2,24 @@ module.exports = {
   testEnvironment: 'node',
   coverageDirectory: 'coverage',
   collectCoverageFrom: [
+    'src/**/*.js',
     'lib/**/*.js',
-    '!lib/**/*.test.js'
+    '!src/**/*.test.js',
+    '!lib/**/*.test.js',
+    '!src/legacy/**/*.js'
   ],
   testMatch: [
-    '**/test/**/*.test.js'
+    'tests/**/*.test.js',
+    'tests/**/*.spec.js'
   ],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/data/',
+    '/docs/',
+    '/logs/'
+  ],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1'
+  },
   verbose: true
 };

@@ -1,77 +1,91 @@
 # Airport Flight Data Collector
 
-An automated flight data collection system that gathers comprehensive flight information from major international airports using GitHub Actions. This project provides a robust solution for tracking flight schedules, delays, cancellations, and other operational data.
+A robust, SOLID-principles-based application for collecting real-time flight data from major airports. Built with clean architecture, dependency injection, and comprehensive error handling for reliable, automated data collection.
 
 ## 🎯 Overview
 
 This system automatically collects flight data from:
-- **San Francisco International Airport (SFO)** - Daily at 6:00 AM PST
-- **Toronto Pearson International Airport (YYZ)** - Both departures and arrivals daily at 11:55 PM EST
+- **San Francisco International Airport (SFO)** - Daily collection with historical data support
+- **Toronto Pearson International Airport (YYZ)** - Real-time arrivals and departures with bot protection handling
 
-The data is collected using official airport APIs and stored in structured JSON format, making it suitable for analysis, monitoring, and research purposes.
+The application features a modular architecture that makes it easy to add new airports, switch storage backends, or modify collection strategies.
 
 ## ✨ Features
 
-- **Automated Daily Collection**: Scheduled data collection via GitHub Actions
-- **Dual Airport Support**: SFO and YYZ (departures and arrivals)
-- **Robust Error Handling**: Comprehensive logging and error recovery
-- **GitHub Integration**: Automatic data storage in repository
-- **Local Development**: Full support for local testing and development
-- **Manual Triggering**: On-demand data collection via GitHub Actions
-- **Structured Data**: Clean JSON format with consistent schema
-- **Historical Archive**: Maintains complete historical dataset since August 2024
+- 🏗️ **Clean Architecture**: SOLID principles with dependency injection
+- 🔄 **Automatic Retry**: Exponential backoff for transient failures
+- 💾 **Multiple Storage Backends**: Local files or GitHub repository
+- 🔌 **Pluggable HTTP Clients**: Choose between fetch or curl
+- 📊 **Comprehensive Logging**: Structured logs with multiple levels
+- 🛡️ **Bot Protection Handling**: Smart strategies for captcha avoidance
+- 🧪 **Fully Testable**: Mock dependencies for unit testing
+- ⚙️ **Environment Configuration**: Flexible deployment options
+- 📅 **Historical Data**: Complete archive since August 2024
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ (for local development)
-- GitHub account with Actions enabled
-- (Optional) Database account for persistent storage (Oracle Cloud, Cloudflare D1)
+- Node.js 18+ 
+- npm or yarn
+- (Optional) GitHub account for GitHub Actions
+- (Optional) Personal Access Token for GitHub storage
 
-### Database Setup (Optional)
+### Installation
 
-By default, data is stored as JSON files. For production use with database storage:
+```bash
+# Clone the repository
+git clone https://github.com/your-username/airport-flight-data-collector.git
+cd airport-flight-data-collector
 
-1. **Copy environment template**:
-   ```bash
-   cp .env.template .env
-   ```
+# Install dependencies
+npm install
+```
 
-2. **Choose a database provider**:
-   - **Local** (default): No setup needed, stores as JSON files
-   - **Oracle Cloud**: Free tier available, enterprise-grade database
-   - **Cloudflare D1**: Serverless SQLite, great for edge deployments
+### Basic Usage
 
-3. **Follow the setup guide**: See [Database Setup Guide](docs/database-setup-guide.md) for detailed instructions
+```bash
+# Collect from all configured airports
+npm run collect
 
-### Setup
+# Collect from specific airport
+npm run collect:sfo
+npm run collect:yyz
 
-1. **Fork this repository** to your GitHub account
+# Test mode (saves to test directory)
+npm run test:sfo
+npm run test:yyz
+```
 
-2. **Create a Personal Access Token (PAT)**:
-   - Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
-   - Click "Generate new token (classic)"
-   - Name: `Airport Data Collector`
-   - Expiration: Choose appropriate duration
-   - Scopes: Select `repo` (full control of repositories)
-   - Click "Generate token" and **copy the token**
+### Advanced Usage
 
-3. **Add the PAT as a repository secret**:
-   - Go to your forked repository → Settings → Secrets and variables → Actions
-   - Click "New repository secret"
-   - Name: `PAT_GITHUB`
-   - Value: Paste your Personal Access Token
-   - Click "Add secret"
+```bash
+# Use curl instead of fetch (better for bot protection)
+HTTP_CLIENT_TYPE=curl npm run collect
 
-4. **Enable GitHub Actions**:
-   - Navigate to the Actions tab in your repository
-   - Enable workflows if prompted
-   - The "Collect Flight Data" workflow should appear
+# Enable verbose logging
+VERBOSE=true npm run collect
 
+# Collect for specific date
+node src/application/commands/collect.js SFO --date 2025-07-24
+
+# Use GitHub storage
+STORAGE_TYPE=github \
+GITHUB_TOKEN=your-token \
+GITHUB_REPOSITORY=owner/repo \
+npm run collect
+```
+
+### GitHub Actions Setup (Optional)
+
+For automated daily collection:
+
+1. **Fork this repository**
+2. **Create a Personal Access Token** with `repo` scope
+3. **Add as repository secret**: `PAT_GITHUB`
+4. **Enable GitHub Actions** in your repository
 5. **Automatic execution**:
-   - YYZ data: Daily at 11:55 PM EST (4:55 UTC)
-   - SFO data: Daily at 6:00 AM PST (2:00 PM UTC)
-   - Manual trigger: Actions tab → "Collect Flight Data" → "Run workflow"
+   - YYZ: Daily at 11:55 PM EST
+   - SFO: Daily at 6:00 AM PST
 
 ## 📊 Data Structure
 
@@ -104,147 +118,153 @@ data/
 - Terminal and gate assignments
 - Real-time status updates
 
-## 💻 Local Development
+## 🏗️ Architecture
 
-### Installation
-```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/airport-flight-data-collector.git
-cd airport-flight-data-collector
+The application follows clean architecture principles with clear separation of concerns:
 
-# Install dependencies
-npm install
+```
+src/
+├── core/              # Business logic and interfaces
+│   ├── interfaces/    # Abstract contracts (IDataCollector, IHttpClient, etc.)
+│   ├── models/        # Domain models (Flight, CollectionResult)
+│   └── errors/        # Custom error types
+├── infrastructure/    # External dependencies
+│   ├── http/          # HTTP clients (NodeFetchClient, CurlClient)
+│   ├── storage/       # Storage services (LocalFileStorage, GitHubStorage)
+│   ├── logging/       # Logger implementation
+│   ├── retry/         # Retry strategies
+│   └── config/        # Configuration management
+├── domain/            # Domain-specific logic
+│   └── collectors/    # Airport collectors (SFOCollector, YYZCollector)
+└── application/       # Application layer
+    ├── services/      # Application services (CollectorService)
+    └── commands/      # CLI commands
 ```
 
-### Available Scripts
-```bash
-# Individual airport collection
-npm run collect:sfo    # Collect SFO data
-npm run collect:yyz    # Collect YYZ data
+For detailed architecture documentation, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-# Combined collection
-npm run collect        # Collect all airport data
+## ⚙️ Configuration
 
-# Test mode (saves to test/ directory)
-npm run test:sfo       # Test SFO collection
-npm run test:yyz       # Test YYZ collection  
-npm test               # Test all collections
-```
+Configuration is managed through environment variables:
 
-### Development Notes
-- **Local Storage**: Data saves to local `data/` directory (production mode) or `data/test/` (test mode)
-- **No Authentication**: Local runs don't require GitHub tokens
-- **Test Mode**: Files include `-test-timestamp` suffix for easy identification
-- **Environment Detection**: Scripts automatically detect GitHub Actions vs local environment
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `STORAGE_TYPE` | Storage backend (`local` or `github`) | `local` | No |
+| `STORAGE_BASE_PATH` | Base path for data storage | `data` | No |
+| `HTTP_CLIENT_TYPE` | HTTP client (`fetch` or `curl`) | `fetch` | No |
+| `HTTP_TIMEOUT` | Request timeout in milliseconds | `30000` | No |
+| `VERBOSE` | Enable verbose logging | `false` | No |
+| `LOG_LEVEL` | Logging level (error, warn, info, debug) | `info` | No |
+| `GITHUB_TOKEN` | GitHub Personal Access Token | - | Yes (if using GitHub storage) |
+| `GITHUB_REPOSITORY` | Repository in `owner/repo` format | - | Yes (if using GitHub storage) |
 
-## ⚙️ Architecture
+### Storage Options
 
-### GitHub Actions Workflow
-The automated workflow (`collect-flight-data.yml`) runs two separate jobs:
+**Local Storage** (Default):
+- Data saved to `data/` directory
+- Logs saved to `logs/` directory (git-ignored)
+- No authentication required
 
-**YYZ Collection Job** (11:55 PM EST):
-- Collects both departure and arrival data
-- Runs on current day data
-- Uses curl with proper headers for API access
-
-**SFO Collection Job** (6:00 AM PST):  
-- Collects comprehensive flight data
-- Focuses on previous day data
-- Handles pagination and rate limiting
-
-### Project Structure
-```
-airport-flight-data-collector/
-├── .github/
-│   └── workflows/
-│       └── collect-flight-data.yml    # GitHub Actions workflow
-├── data/                              # Historical flight data
-│   ├── sfo/                          # SFO flight files (300+ files)
-│   └── yyz/                          # YYZ departure/arrival files
-├── src/
-│   ├── collect_sfo_data.js           # SFO data collection logic
-│   ├── collect_yyz_data.js           # YYZ data collection logic  
-│   └── utils.js                      # Shared utilities and GitHub API
-├── test/
-│   └── data/                         # Test data storage
-├── package.json                      # Dependencies and scripts
-├── LICENSE                           # MIT License
-└── README.md                         # This documentation
-```
-
-### Core Components
-- **Data Collectors**: Individual scripts for each airport's API
-- **Utilities**: Shared functions for data fetching, storage, and GitHub integration
-- **Error Handling**: Comprehensive logging and graceful failure recovery
-- **Storage Engine**: Automatic detection between local and GitHub storage
+**GitHub Storage**:
+- Data automatically committed to repository
+- Requires Personal Access Token with `repo` scope
+- Set `STORAGE_TYPE=github` and provide token
 
 ## 🤝 Contributing
 
-We welcome contributions! Here are ways you can help:
+### Adding New Airports
 
-### Enhancement Ideas
-- **New Airports**: Add support for additional airports (LAX, JFK, LHR, etc.)
-- **Data Analysis**: Build analysis tools and visualizations
-- **API Improvements**: Enhance error handling and retry logic
-- **Documentation**: Improve guides and add examples
-- **Testing**: Expand test coverage and CI/CD
+To add support for a new airport:
 
-### Development Process
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/airport-lax`)
-3. Make your changes with proper logging and error handling
-4. Test locally using `npm test`
-5. Submit a pull request with clear description
+1. Create a new collector class in `src/domain/collectors/`:
+```javascript
+const BaseAirportCollector = require('./BaseAirportCollector');
 
-### Code Standards
-- Use Node.js 18+ features
-- Follow existing code style and patterns
-- Include comprehensive error handling
-- Add logging for debugging
-- Update documentation as needed
+class JFKCollector extends BaseAirportCollector {
+  getAirportCode() {
+    return 'JFK';
+  }
+  
+  async prepareRequest(options) {
+    // Implementation
+  }
+  
+  async transformData(rawData, options) {
+    // Implementation
+  }
+}
+```
+
+2. Register in service container (`src/application/services/ServiceContainer.js`)
+3. Add configuration for the new airport
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed instructions.
+
+### Development Guidelines
+
+- Follow SOLID principles
+- Write unit tests for new features
+- Use dependency injection
+- Add comprehensive error handling
+- Update documentation
 
 ## 🛠️ Troubleshooting
 
-### Common Issues
+### Bot Protection / Captcha Issues
+- Use curl HTTP client: `HTTP_CLIENT_TYPE=curl npm run collect`
+- Add delays between requests
+- Check logs in `logs/` directory for details
 
-**GitHub Actions Failing**:
-- Check that `PAT_GITHUB` secret is set correctly
-- Verify token has `repo` scope permissions
-- Review Actions logs for specific error messages
+### Storage Issues
+- **GitHub**: Ensure token has `repo` write permissions
+- **Local**: Check disk space and write permissions
 
-**Local Development Issues**:
-- Ensure Node.js 18+ is installed (`node --version`)
-- Run `npm install` to install all dependencies
-- Check file permissions in project directory
-- Verify internet connection for API access
+### Missing Data
+- Verify API endpoints are accessible
+- Check environment variables are set correctly
+- Review logs for specific error messages
 
-**Data Collection Problems**:
-- Airport APIs may change endpoints or formats
-- Check if airport websites are accessible
-- Review error logs for API response details
-- Try manual workflow trigger to isolate issues
+### Migration from Legacy Code
+If upgrading from the previous version, see [docs/MIGRATION.md](docs/MIGRATION.md).
 
-### Getting Help
-- Open an issue with detailed error description
-- Include relevant logs and steps to reproduce
-- Specify your environment (local vs GitHub Actions)
-- Check existing issues for similar problems
+## 📈 Project Structure
 
-## 📈 Dataset Statistics
+```
+airport-flight-data-collector/
+├── .github/workflows/         # GitHub Actions workflows
+├── data/                      # Historical flight data (git-tracked)
+│   ├── sfo/                   # SFO flight data
+│   └── yyz/                   # YYZ arrivals/departures
+├── docs/                      # Documentation
+│   ├── ARCHITECTURE.md        # Architecture details
+│   └── MIGRATION.md           # Migration guide
+├── logs/                      # Application logs (git-ignored)
+├── src/                       # Source code
+│   ├── application/           # Application layer
+│   ├── core/                  # Core business logic
+│   ├── domain/                # Domain-specific code
+│   └── infrastructure/        # External dependencies
+├── tests/                     # Test files
+│   ├── fixtures/              # Test data
+│   ├── integration/           # Integration tests
+│   └── unit/                  # Unit tests
+└── package.json               # Project configuration
+```
 
-- **Total Files**: 500+ historical data files
-- **Date Range**: August 2024 - Present (10+ months)
-- **Data Points**: Millions of individual flight records
-- **File Size**: ~50MB total compressed data
-- **Update Frequency**: 2 collections daily (SFO + YYZ)
+## 📊 Dataset Statistics
+
+- **Historical Data**: August 2024 - Present
+- **Airports**: SFO, YYZ (expandable)
+- **Update Frequency**: Daily automated collection
+- **Data Format**: Structured JSON
+- **Storage**: Local files or GitHub repository
 
 ## 📄 License
 
-This project is open source and available under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE).
 
-## 🔗 Related Projects
+## 🙏 Acknowledgments
 
-- Airport API documentation and schemas
-- Flight data analysis tools
-- Aviation industry datasets
-- Real-time flight tracking applications
+- Airport APIs for providing public flight data
+- Contributors and maintainers
+- Open source community
