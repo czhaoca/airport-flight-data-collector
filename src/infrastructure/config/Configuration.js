@@ -53,6 +53,12 @@ class Configuration {
           baseUrl: 'https://www.torontopearson.com/api/flightsapidata/getflightlist',
           departureReferer: 'https://www.torontopearson.com/en/departures',
           arrivalReferer: 'https://www.torontopearson.com/en/arrivals'
+        },
+        yvr: {
+          baseUrl: this.env.YVR_API_URL || 'https://www.yvr.ca/en/_api/Flights',
+          departureReferer: 'https://www.yvr.ca/en/passengers/flights/departing-flights',
+          arrivalReferer: 'https://www.yvr.ca/en/passengers/flights/arriving-flights',
+          useBrowser: true
         }
       },
 

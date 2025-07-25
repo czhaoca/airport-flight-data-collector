@@ -7,6 +7,7 @@ A robust, SOLID-principles-based application for collecting real-time flight dat
 This system automatically collects flight data from:
 - **San Francisco International Airport (SFO)** - Daily collection with historical data support
 - **Toronto Pearson International Airport (YYZ)** - Real-time arrivals and departures with bot protection handling
+- **Vancouver International Airport (YVR)** - Advanced browser automation for Cloudflare bypass
 
 The application features a modular architecture that makes it easy to add new airports, switch storage backends, or modify collection strategies.
 
@@ -15,9 +16,10 @@ The application features a modular architecture that makes it easy to add new ai
 - 🏗️ **Clean Architecture**: SOLID principles with dependency injection
 - 🔄 **Automatic Retry**: Exponential backoff for transient failures
 - 💾 **Multiple Storage Backends**: Local files or GitHub repository
-- 🔌 **Pluggable HTTP Clients**: Choose between fetch or curl
+- 🔌 **Pluggable HTTP Clients**: Choose between fetch, curl, or Puppeteer
+- 🤖 **Browser Automation**: Puppeteer integration for advanced bot protection
 - 📊 **Comprehensive Logging**: Structured logs with multiple levels
-- 🛡️ **Bot Protection Handling**: Smart strategies for captcha avoidance
+- 🛡️ **Bot Protection Handling**: Smart strategies including Cloudflare bypass
 - 🧪 **Fully Testable**: Mock dependencies for unit testing
 - ⚙️ **Environment Configuration**: Flexible deployment options
 - 📅 **Historical Data**: Complete archive since August 2024
@@ -50,6 +52,7 @@ npm run collect
 # Collect from specific airport
 npm run collect:sfo
 npm run collect:yyz
+node src/collect_yvr_data.js
 
 # Test mode (saves to test directory)
 npm run test:sfo
@@ -61,6 +64,9 @@ npm run test:yyz
 ```bash
 # Use curl instead of fetch (better for bot protection)
 HTTP_CLIENT_TYPE=curl npm run collect
+
+# Use Puppeteer for advanced bot protection (required for YVR)
+HTTP_CLIENT_TYPE=puppeteer node src/collect_yvr_data.js
 
 # Enable verbose logging
 VERBOSE=true npm run collect
@@ -86,6 +92,7 @@ For automated daily collection:
 5. **Automatic execution**:
    - YYZ: Daily at 11:55 PM EST
    - SFO: Daily at 6:00 AM PST
+   - YVR: Manual or scheduled (requires Puppeteer)
 
 ## 📊 Data Structure
 
@@ -94,9 +101,11 @@ For automated daily collection:
 data/
 ├── sfo/
 │   └── sfo_flights_YYYY-MM-DD.json
-└── yyz/
-    ├── yyz_departures_YYYY-MM-DD.json
-    └── yyz_arrivals_YYYY-MM-DD.json
+├── yyz/
+│   ├── yyz_departures_YYYY-MM-DD.json
+│   └── yyz_arrivals_YYYY-MM-DD.json
+└── yvr/
+    └── yvr_flights_YYYY-MM-DD.json
 ```
 
 ### Data Coverage
@@ -118,6 +127,12 @@ data/
 - Terminal and gate assignments
 - Real-time status updates
 
+**YVR Data**:
+- Combined arrivals and departures
+- Full airline names and codes
+- Gate and terminal information
+- Real-time status with remarks
+
 ## 🏗️ Architecture
 
 The application follows clean architecture principles with clear separation of concerns:
@@ -135,7 +150,7 @@ src/
 │   ├── retry/         # Retry strategies
 │   └── config/        # Configuration management
 ├── domain/            # Domain-specific logic
-│   └── collectors/    # Airport collectors (SFOCollector, YYZCollector)
+│   └── collectors/    # Airport collectors (SFOCollector, YYZCollector, YVRCollector)
 └── application/       # Application layer
     ├── services/      # Application services (CollectorService)
     └── commands/      # CLI commands
@@ -151,7 +166,7 @@ Configuration is managed through environment variables:
 |----------|-------------|---------|----------|
 | `STORAGE_TYPE` | Storage backend (`local` or `github`) | `local` | No |
 | `STORAGE_BASE_PATH` | Base path for data storage | `data` | No |
-| `HTTP_CLIENT_TYPE` | HTTP client (`fetch` or `curl`) | `fetch` | No |
+| `HTTP_CLIENT_TYPE` | HTTP client (`fetch`, `curl`, or `puppeteer`) | `fetch` | No |
 | `HTTP_TIMEOUT` | Request timeout in milliseconds | `30000` | No |
 | `VERBOSE` | Enable verbose logging | `false` | No |
 | `LOG_LEVEL` | Logging level (error, warn, info, debug) | `info` | No |
@@ -212,6 +227,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed instructions.
 
 ### Bot Protection / Captcha Issues
 - Use curl HTTP client: `HTTP_CLIENT_TYPE=curl npm run collect`
+- For Cloudflare protection (YVR): Use Puppeteer automatically
 - Add delays between requests
 - Check logs in `logs/` directory for details
 
@@ -254,7 +270,7 @@ airport-flight-data-collector/
 ## 📊 Dataset Statistics
 
 - **Historical Data**: August 2024 - Present
-- **Airports**: SFO, YYZ (expandable)
+- **Airports**: SFO, YYZ, YVR (expandable)
 - **Update Frequency**: Daily automated collection
 - **Data Format**: Structured JSON
 - **Storage**: Local files or GitHub repository

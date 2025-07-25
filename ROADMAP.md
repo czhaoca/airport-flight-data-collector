@@ -15,6 +15,12 @@
 ## 🚀 Phase 2: Enhanced Data Collection (Q3 2025)
 
 ### 2.1 Additional Airports
+- [x] **YVR** - Vancouver International Airport ✅
+  - ✅ Researched API endpoints (OData format)
+  - ✅ Implemented YVRCollector extending BaseAirportCollector
+  - ✅ Added configuration and test script
+  - ✅ Implemented Puppeteer-based browser automation for Cloudflare bypass
+  - ✅ Successfully collecting 600+ daily flights with full details
 - [ ] **LAX** - Los Angeles International Airport
   - Research API endpoints
   - Implement collector extending BaseAirportCollector

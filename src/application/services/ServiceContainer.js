@@ -1,10 +1,12 @@
 const NodeFetchClient = require('../../infrastructure/http/NodeFetchClient');
 const CurlClient = require('../../infrastructure/http/CurlClient');
+const PuppeteerClient = require('../../infrastructure/http/PuppeteerClient');
 const LocalFileStorage = require('../../infrastructure/storage/LocalFileStorage');
 const GitHubStorage = require('../../infrastructure/storage/GitHubStorage');
 const ExponentialBackoffRetry = require('../../infrastructure/retry/ExponentialBackoffRetry');
 const SFOCollector = require('../../domain/collectors/SFOCollector');
 const YYZCollector = require('../../domain/collectors/YYZCollector');
+const YVRCollector = require('../../domain/collectors/YVRCollector');
 const CollectorService = require('./CollectorService');
 const { getConfig } = require('../../infrastructure/config/Configuration');
 
@@ -65,6 +67,11 @@ class ServiceContainer {
       const clientType = c.get('config').get('http.clientType');
       if (clientType === 'curl') {
         return new CurlClient();
+      } else if (clientType === 'puppeteer') {
+        return new PuppeteerClient({
+          headless: c.get('config').get('http.puppeteer.headless', true),
+          timeout: c.get('config').get('http.timeout')
+        });
       }
       return new NodeFetchClient();
     }, true);
@@ -108,12 +115,22 @@ class ServiceContainer {
       );
     });
 
+    container.register('yvrCollector', (c) => {
+      // YVR always uses Puppeteer due to Cloudflare protection
+      return new YVRCollector(
+        c.get('httpClient'),
+        c.get('retryStrategy'),
+        c.get('config')
+      );
+    });
+
     // Register main collector service
     container.register('collectorService', (c) => {
       return new CollectorService(
         [
           c.get('sfoCollector'),
-          c.get('yyzCollector')
+          c.get('yyzCollector'),
+          c.get('yvrCollector')
         ],
         c.get('storageService'),
         c.get('config')

@@ -1,6 +1,7 @@
 const BaseAirportCollector = require('./BaseAirportCollector');
 const Flight = require('../../core/models/Flight');
 const { ValidationError, CaptchaError } = require('../../core/errors/CollectionError');
+const { getTodayDate } = require('../../utils/dateUtils');
 
 /**
  * Toronto Pearson International Airport data collector
@@ -118,7 +119,7 @@ class YYZCollector extends BaseAirportCollector {
     }
 
     const type = options.type || 'departure';
-    const targetDate = options.date || new Date().toISOString().split('T')[0];
+    const targetDate = options.date || getTodayDate();
 
     // Transform to Flight models
     const transformedFlights = rawData.list.map(flightData => {
@@ -155,7 +156,7 @@ class YYZCollector extends BaseAirportCollector {
     
     const combinedData = {
       airport: 'YYZ',
-      date: new Date().toISOString().split('T')[0],
+      date: getTodayDate(),
       departures: depSuccess ? results.departures.data : null,
       arrivals: arrSuccess ? results.arrivals.data : null
     };

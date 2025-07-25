@@ -1,6 +1,7 @@
 const BaseAirportCollector = require('./BaseAirportCollector');
 const Flight = require('../../core/models/Flight');
 const { ValidationError } = require('../../core/errors/CollectionError');
+const { getYesterdayDate } = require('../../utils/dateUtils');
 
 /**
  * San Francisco International Airport data collector
@@ -46,7 +47,7 @@ class SFOCollector extends BaseAirportCollector {
     }
 
     // Get target date (default to yesterday)
-    const targetDate = options.date || this._getYesterdayDate();
+    const targetDate = options.date || getYesterdayDate();
 
     // Filter flights by date if specified
     let flights = rawData.data;
@@ -96,16 +97,6 @@ class SFOCollector extends BaseAirportCollector {
     if (data.flights.length === 0 && this.config.get('features.verboseLogging')) {
       console.warn('No flights found in SFO data');
     }
-  }
-
-  /**
-   * Gets yesterday's date in YYYY-MM-DD format
-   * @private
-   */
-  _getYesterdayDate() {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    return yesterday.toISOString().split('T')[0];
   }
 }
 

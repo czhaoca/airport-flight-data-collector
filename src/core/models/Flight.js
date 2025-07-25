@@ -42,7 +42,8 @@ class Flight {
   static fromApiData(data, format) {
     const parsers = {
       sfo: Flight.parseSFOData,
-      yyz: Flight.parseYYZData
+      yyz: Flight.parseYYZData,
+      yvr: Flight.parseYVRData
     };
 
     const parser = parsers[format];
@@ -97,6 +98,31 @@ class Flight {
       metadata: {
         carousel: data.carousel,
         zone: data.zone
+      }
+    });
+  }
+
+  static parseYVRData(data) {
+    return new Flight({
+      id: `${data.flight_number}_${data.scheduled_time}`,
+      flightNumber: data.flight_number,
+      airline: {
+        code: data.airline_code,
+        name: data.airline
+      },
+      origin: data.type === 'departure' ? 'YVR' : data.origin_code || data.origin,
+      destination: data.type === 'departure' ? data.destination_code || data.destination : 'YVR',
+      scheduledTime: data.scheduled_time,
+      actualTime: data.actual_time,
+      status: data.status,
+      gate: data.gate,
+      terminal: data.terminal,
+      type: data.type,
+      aircraft: null,
+      metadata: {
+        estimatedTime: data.estimated_time,
+        remarks: data.remarks,
+        carousel: data.carousel
       }
     });
   }

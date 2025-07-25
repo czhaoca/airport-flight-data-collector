@@ -9,20 +9,21 @@
   "scripts": {
     "collect:sfo": "node src/collect_sfo_data.js",
     "collect:yyz": "node src/collect_yyz_data.js",
+    "collect:yvr": "node src/collect_yvr_data.js",
     "collect": "node src/application/commands/collect.js",
     "test:sfo": "node src/collect_sfo_data.js --test",
     "test:yyz": "node src/collect_yyz_data.js --test",
+    "test:yvr": "node src/collect_yvr_data.js --test",
     "test": "node src/application/commands/collect.js --test",
     "test:unit": "jest",
     "test:unit:watch": "jest --watch",
-    "collect:new": "node src/application/commands/collect.js",
-    "collect:new:sfo": "node src/application/commands/collect.js SFO",
-    "collect:new:yyz": "node src/application/commands/collect.js YYZ"
+    "collect:all": "node src/collect_all.js"
   },
   "dependencies": {
     "@octokit/rest": "^18.5.3",
     "node-fetch": "^2.6.1",
-    "oracledb": "^6.9.0"
+    "oracledb": "^6.9.0",
+    "puppeteer": "^24.15.0"
   },
   "devDependencies": {
     "jest": "^30.0.5"
