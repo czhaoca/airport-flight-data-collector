@@ -12,10 +12,15 @@
     "collect": "npm run collect:sfo && npm run collect:yyz",
     "test:sfo": "node src/collect_sfo_data.js --test",
     "test:yyz": "node src/collect_yyz_data.js --test",
-    "test": "npm run test:sfo && npm run test:yyz"
+    "test": "npm run test:sfo && npm run test:yyz",
+    "test:unit": "jest",
+    "test:unit:watch": "jest --watch"
   },
   "dependencies": {
-    "node-fetch": "^2.6.1",
-    "@octokit/rest": "^18.5.3"
+    "@octokit/rest": "^18.5.3",
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {
+    "jest": "^30.0.5"
   }
 }
