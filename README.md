@@ -263,6 +263,10 @@ airport-flight-data-collector/
 
 This project is licensed under the [MIT License](LICENSE).
 
+## 🗺️ Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for detailed development plans and upcoming features.
+
 ## 🙏 Acknowledgments
 
 - Airport APIs for providing public flight data
