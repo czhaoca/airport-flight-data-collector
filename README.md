@@ -26,6 +26,23 @@ The data is collected using official airport APIs and stored in structured JSON 
 ### Prerequisites
 - Node.js 18+ (for local development)
 - GitHub account with Actions enabled
+- (Optional) Database account for persistent storage (Oracle Cloud, Cloudflare D1)
+
+### Database Setup (Optional)
+
+By default, data is stored as JSON files. For production use with database storage:
+
+1. **Copy environment template**:
+   ```bash
+   cp .env.template .env
+   ```
+
+2. **Choose a database provider**:
+   - **Local** (default): No setup needed, stores as JSON files
+   - **Oracle Cloud**: Free tier available, enterprise-grade database
+   - **Cloudflare D1**: Serverless SQLite, great for edge deployments
+
+3. **Follow the setup guide**: See [Database Setup Guide](docs/database-setup-guide.md) for detailed instructions
 
 ### Setup
 
