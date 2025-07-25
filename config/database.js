@@ -6,6 +6,10 @@ const config = {
   retryAttempts: parseInt(process.env.DB_RETRY_ATTEMPTS) || 3,
   retryDelay: parseInt(process.env.DB_RETRY_DELAY) || 1000,
   
+  // Global settings for all providers
+  environment: process.env.NODE_ENV || 'development',
+  tablePrefix: process.env.DB_TABLE_PREFIX || 'airport_flight_data',
+  
   local: {
     dataDir: process.env.LOCAL_DATA_DIR || path.join(process.cwd(), 'data'),
     prettyPrint: process.env.LOCAL_PRETTY_PRINT !== 'false'
@@ -20,7 +24,9 @@ const config = {
     poolMin: parseInt(process.env.OCI_POOL_MIN) || 1,
     poolMax: parseInt(process.env.OCI_POOL_MAX) || 4,
     poolIncrement: parseInt(process.env.OCI_POOL_INCREMENT) || 1,
-    poolTimeout: parseInt(process.env.OCI_POOL_TIMEOUT) || 60
+    poolTimeout: parseInt(process.env.OCI_POOL_TIMEOUT) || 60,
+    environment: process.env.OCI_ENVIRONMENT || process.env.NODE_ENV || 'development',
+    tablePrefix: process.env.OCI_TABLE_PREFIX || process.env.DB_TABLE_PREFIX || 'airport_flight_data'
   },
   
   cloudflare: {
@@ -28,7 +34,8 @@ const config = {
     databaseId: process.env.CF_DATABASE_ID,
     apiToken: process.env.CF_API_TOKEN,
     workerUrl: process.env.CF_WORKER_URL,
-    environment: process.env.CF_ENVIRONMENT || 'production'
+    environment: process.env.CF_ENVIRONMENT || process.env.NODE_ENV || 'development',
+    tablePrefix: process.env.CF_TABLE_PREFIX || process.env.DB_TABLE_PREFIX || 'airport_flight_data'
   }
 };
 
