@@ -1,205 +1,283 @@
-# Development Roadmap
+# Airport Flight Data Collector Roadmap
 
-## ✅ Completed (Phase 1: Architecture Refactoring)
+## Overview
 
-- [x] Refactor codebase to follow SOLID principles
-- [x] Implement clean architecture with dependency injection
-- [x] Create pluggable HTTP clients (fetch, curl)
-- [x] Create pluggable storage backends (local, GitHub)
-- [x] Add comprehensive error handling and logging
-- [x] Implement retry logic with exponential backoff
-- [x] Reorganize directory structure
-- [x] Update all documentation
-- [x] Maintain backward compatibility
+This roadmap outlines the planned features and improvements for the Airport Flight Data Collector project. We follow a quarterly release cycle with continuous updates.
 
-## 🚀 Phase 2: Enhanced Data Collection (Q3 2025)
+## Release Status
 
-### 2.1 Additional Airports
-- [x] **YVR** - Vancouver International Airport ✅
-  - ✅ Researched API endpoints (OData format)
-  - ✅ Implemented YVRCollector extending BaseAirportCollector
-  - ✅ Added configuration and test script
-  - ✅ Implemented Puppeteer-based browser automation for Cloudflare bypass
-  - ✅ Successfully collecting 600+ daily flights with full details
+Current Version: **2.1.0** (January 2025)  
+Current Quarter: **Q2 2025**
+
+## Completed Milestones
+
+### ✅ Q4 2024 - Foundation
+- [x] Core collection system (SFO, YYZ)
+- [x] Local file storage
+- [x] GitHub Actions basic automation
+- [x] Initial documentation
+
+### ✅ Q1 2025 - Architecture & Expansion
+- [x] SOLID architecture refactoring
+- [x] Multi-database support (Cloudflare D1, Oracle Cloud)
+- [x] YVR airport integration with Puppeteer
+- [x] Enhanced error handling and retry logic
+- [x] Comprehensive documentation reorganization
+- [x] GitHub Actions database workflows
+
+## Current Quarter
+
+### 🚧 Q2 2025 - Dashboard & API (In Progress)
+
+#### Web Dashboard (40% complete)
+- [ ] React/Next.js frontend
+- [ ] Real-time flight status display
+- [ ] Historical data visualization with Chart.js
+- [ ] Airport comparison views
+- [ ] Performance metrics dashboard
+- [ ] Mobile-responsive design
+
+#### REST API v2 (20% complete)
+- [ ] OpenAPI 3.0 specification
+- [ ] RESTful endpoints for all operations
+- [ ] JWT authentication
+- [ ] Rate limiting and quotas
+- [ ] Pagination and filtering
+- [ ] API versioning
+
+#### New Airports (Planning)
 - [ ] **LAX** - Los Angeles International Airport
-  - Research API endpoints
-  - Implement collector extending BaseAirportCollector
-  - Add configuration and documentation
-- [ ] **JFK** - John F. Kennedy International Airport
-  - Handle complex terminal structure
-  - Support for international flights
+  - API research completed
+  - Endpoint: https://www.flylax.com/api/flights
+  - Implementation pending
 - [ ] **ORD** - Chicago O'Hare International Airport
-  - Multi-terminal support
-  - Weather integration
+  - API discovery in progress
+  - Complex terminal structure
+- [ ] **ATL** - Hartsfield-Jackson Atlanta International
+  - Research phase
+  - World's busiest airport
 
-### 2.2 Data Enrichment
-- [ ] Weather data integration
-  - Add weather conditions at collection time
-  - Historical weather correlation
-- [ ] Aircraft information
-  - Aircraft type details
-  - Seating capacity
-  - Age of aircraft
-- [ ] Airline performance metrics
-  - On-time performance
-  - Cancellation rates
+#### Infrastructure
+- [ ] Docker support with multi-stage builds
+- [ ] Performance monitoring with Grafana
+- [ ] Centralized logging with Winston
 
-## 💾 Phase 3: Storage & Database Integration (Q3-Q4 2025)
+## Upcoming Quarters
 
-### 3.1 Database Adapters
-- [ ] **PostgreSQL** adapter
-  - Implement IStorageService for PostgreSQL
-  - Schema design for flight data
-  - Migration scripts
-- [ ] **MongoDB** adapter
-  - Document-based storage
-  - Flexible schema for different airports
-- [ ] **Redis** caching layer
-  - Cache recent queries
-  - Real-time data updates
+### 📅 Q3 2025 - Analytics & Real-time
 
-### 3.2 Data Pipeline
-- [ ] ETL pipeline for data transformation
-- [ ] Data validation and cleaning
-- [ ] Automated data quality checks
-- [ ] Historical data migration tools
+#### Data Analytics Engine
+- [ ] Delay prediction models using historical data
+- [ ] Pattern detection algorithms
+- [ ] Airline performance scoring
+- [ ] Route efficiency analysis
+- [ ] Seasonal trend identification
 
-## 📊 Phase 4: Analytics & API (Q4 2025 - Q1 2026)
+#### Real-time Features
+- [ ] WebSocket support for live updates
+- [ ] Server-sent events for flight status
+- [ ] Real-time delay notifications
+- [ ] Live airport traffic visualization
 
-### 4.1 REST API
-- [ ] FastAPI or Express.js API server
-- [ ] Endpoints for flight queries
-  - By date range
-  - By airline
-  - By route
-  - By status
-- [ ] Rate limiting and authentication
-- [ ] API documentation (OpenAPI/Swagger)
+#### API Enhancements
+- [ ] GraphQL API with subscriptions
+- [ ] Batch operations support
+- [ ] Webhook integrations
+- [ ] Data export API (CSV, Parquet, JSON)
 
-### 4.2 Analytics Dashboard
-- [ ] Web-based dashboard
-  - Flight statistics
-  - Delay patterns
-  - Airline performance
-- [ ] Data visualization
-  - Charts and graphs
-  - Heat maps for delays
-  - Route maps
+#### Developer Tools
+- [ ] Jupyter notebook integration
+- [ ] Python SDK
+- [ ] R package
+- [ ] CLI improvements
 
-### 4.3 Predictive Analytics
-- [ ] Delay prediction models
-- [ ] Seasonal pattern analysis
-- [ ] Capacity utilization trends
+### 📅 Q4 2025 - Enterprise & Mobile
 
-## 🛡️ Phase 5: Reliability & Monitoring (Q1 2026)
+#### Enterprise Features
+- [ ] Role-based access control (RBAC)
+- [ ] Multi-tenant support
+- [ ] SSO integration (SAML, OAuth)
+- [ ] Audit logging
+- [ ] SLA monitoring and reporting
+- [ ] Custom alerts and notifications
 
-### 5.1 Monitoring
-- [ ] Application performance monitoring (APM)
-- [ ] Custom metrics and alerts
-- [ ] Health check endpoints
-- [ ] Uptime monitoring
-
-### 5.2 Enhanced Bot Protection
-- [ ] Puppeteer/Playwright integration
-- [ ] Proxy rotation support
-- [ ] CAPTCHA solving strategies
-- [ ] Request fingerprinting
-
-### 5.3 Distributed Collection
-- [ ] Multiple collection nodes
-- [ ] Load balancing
-- [ ] Failover mechanisms
-- [ ] Geographic distribution
-
-## 🧪 Phase 6: Testing & Quality (Ongoing)
-
-### 6.1 Test Coverage
-- [ ] Unit tests for all components (target: 80%+)
-- [ ] Integration tests for collectors
-- [ ] End-to-end tests
-- [ ] Performance tests
-
-### 6.2 CI/CD Pipeline
-- [ ] Automated testing on PR
-- [ ] Code quality checks (ESLint, Prettier)
-- [ ] Security scanning
-- [ ] Automated deployment
-
-### 6.3 Documentation
-- [ ] API documentation
-- [ ] Video tutorials
-- [ ] Architecture decision records (ADRs)
-- [ ] Contribution guidelines
-
-## 🌟 Phase 7: Advanced Features (Q2 2026+)
-
-### 7.1 Real-time Updates
-- [ ] WebSocket support
-- [ ] Server-sent events
-- [ ] Push notifications
-- [ ] Live flight tracking
-
-### 7.2 Machine Learning
-- [ ] Anomaly detection
-- [ ] Pattern recognition
-- [ ] Predictive maintenance insights
-- [ ] Route optimization suggestions
-
-### 7.3 Mobile Support
-- [ ] Mobile-friendly API
-- [ ] React Native app
+#### Mobile Application
+- [ ] React Native cross-platform app
+- [ ] Flight tracking and notifications
 - [ ] Offline support
-- [ ] Push notifications
+- [ ] Push notifications for delays
+- [ ] Airport maps integration
 
-## 🤝 Community & Ecosystem
+#### Platform Expansion
+- [ ] Kubernetes deployment with Helm
+- [ ] Multi-region deployment (US, EU, APAC)
+- [ ] CDN integration for global performance
+- [ ] Automated backup and disaster recovery
 
-### Open Source Initiatives
-- [ ] Plugin system for custom collectors
-- [ ] Community-contributed airports
-- [ ] Shared data standards
-- [ ] Integration with other flight data sources
+#### Integration Marketplace
+- [ ] Slack integration
+- [ ] Microsoft Teams app
+- [ ] PagerDuty alerts
+- [ ] Datadog monitoring
+- [ ] Splunk logging
 
-### Partnerships
-- [ ] Aviation data providers
-- [ ] Academic research
-- [ ] Industry collaborations
-- [ ] Open data initiatives
+## 2026 Vision
 
-## 📅 Release Schedule
+### 🌍 Global Aviation Data Platform
 
-- **v2.0.0** (Current) - SOLID Architecture
-- **v2.1.0** (Aug 2025) - Multi-airport support
-- **v2.2.0** (Sep 2025) - Database integration
-- **v3.0.0** (Dec 2025) - API & Analytics
-- **v3.1.0** (Feb 2026) - Enhanced monitoring
-- **v4.0.0** (Jun 2026) - Real-time & ML features
+#### Coverage Expansion
+- 50+ major international airports
+- Regional airport support
+- Private aviation tracking
+- Cargo flight monitoring
 
-## 🎯 Success Metrics
+#### Advanced Features
+- **AI-Powered Predictions**
+  - Delay probability calculations
+  - Cancellation risk assessment
+  - Optimal travel time recommendations
+  - Gate change predictions
 
-- **Data Quality**: 99.9% collection success rate
-- **Coverage**: 10+ major airports
-- **Performance**: <1s API response time
-- **Reliability**: 99.95% uptime
-- **Community**: 100+ contributors
-- **Usage**: 1M+ API calls/month
+- **Weather Integration**
+  - Real-time weather data correlation
+  - Weather-based delay predictions
+  - Severe weather alerts
+  - Historical weather impact analysis
 
-## 💡 Getting Involved
+- **Sustainability Tracking**
+  - Carbon footprint calculations
+  - Fuel efficiency metrics
+  - Sustainable route suggestions
+  - Airline sustainability scores
 
-Want to contribute? Here's how:
+#### Industry Partnerships
+- Official airline data feeds
+- Airport authority integrations
+- Air traffic control data access
+- Travel agency APIs
 
-1. **Pick a task** from the roadmap
-2. **Open an issue** to discuss implementation
-3. **Fork & develop** following our guidelines
-4. **Submit a PR** with tests and docs
-5. **Celebrate** your contribution!
+#### Research & Education
+- Academic research partnerships
+- Open data initiative
+- Educational resources and courses
+- Annual aviation data conference
+- Research grant program
 
-Priority areas for contributors:
-- New airport collectors
-- Database adapters
-- API development
-- Documentation
-- Testing
+## Long-term Goals (2027+)
+
+### 🚀 Next-Generation Features
+
+#### AI & Machine Learning
+- Natural language query interface
+- Automated anomaly detection
+- Predictive maintenance insights
+- Passenger flow optimization
+- Dynamic pricing predictions
+
+#### Industry Integration
+- Direct airline system integration
+- Baggage tracking
+- Security wait time predictions
+- Lounge availability tracking
+- Ground transportation coordination
+
+#### Advanced Analytics
+- Network effect analysis
+- Cascade delay predictions
+- Fleet optimization recommendations
+- Hub efficiency scoring
+- Economic impact assessments
+
+## Technical Debt & Improvements
+
+### Q2 2025
+- [ ] TypeScript migration (gradual)
+- [ ] Improve test coverage to 90%
+- [ ] Performance optimization for large datasets
+- [ ] Memory usage optimization
+
+### Q3 2025
+- [ ] Code splitting for better performance
+- [ ] Database query optimization
+- [ ] Caching layer implementation
+- [ ] API response time improvements
+
+### Q4 2025
+- [ ] Security audit and improvements
+- [ ] Accessibility compliance (WCAG 2.1)
+- [ ] Internationalization (i18n) support
+- [ ] Documentation translations
+
+## Success Metrics
+
+### Technical Metrics
+- **Collection Success Rate**: >99.5%
+- **API Response Time**: <200ms (p95)
+- **Test Coverage**: >90%
+- **Uptime**: 99.95%
+- **Data Freshness**: <5 minutes
+
+### Business Metrics
+- **Active Users**: 10,000+ by end of 2025
+- **API Calls**: 10M+ per month
+- **Airports Covered**: 20+ by end of 2025
+- **Data Points**: 100M+ flights tracked
+- **Community Contributors**: 50+
+
+## Contributing to the Roadmap
+
+We welcome community input on our roadmap! Here's how you can contribute:
+
+1. **Feature Requests**: Open an issue with the `enhancement` label
+2. **Vote on Features**: 👍 on issues you want prioritized
+3. **Contribute Code**: Pick items marked "help wanted"
+4. **Join Discussions**: Participate in roadmap planning discussions
+5. **Sponsor Development**: Support specific features
+
+## Priority Matrix
+
+### High Priority
+- Web dashboard completion
+- REST API v2
+- New airport integrations
+- Performance monitoring
+
+### Medium Priority
+- GraphQL API
+- Mobile app
+- Enterprise features
+- Advanced analytics
+
+### Low Priority
+- Exotic integrations
+- Nice-to-have features
+- Experimental features
+
+## Release Schedule
+
+### 2025 Releases
+- **v2.1.0** (Jan 2025) ✅ - Documentation & Architecture
+- **v2.2.0** (Apr 2025) - Dashboard Alpha
+- **v2.3.0** (Jun 2025) - API v2 & New Airports
+- **v2.4.0** (Sep 2025) - Analytics Engine
+- **v3.0.0** (Dec 2025) - Enterprise Features
+
+### 2026 Releases
+- **v3.1.0** (Mar 2026) - Mobile App
+- **v3.2.0** (Jun 2026) - AI Features
+- **v4.0.0** (Sep 2026) - Global Platform
+
+## Update History
+
+- **2025-01-26**: Updated roadmap with detailed Q2 2025 progress
+- **2025-01-15**: Major roadmap revision after v2.0 release
+- **2024-12-01**: Initial roadmap creation
 
 ---
 
-*This roadmap is a living document and will be updated based on community feedback and project evolution.*
+*This roadmap is a living document and will be updated monthly based on progress and community feedback.*
+
+For the latest updates:
+- [GitHub Issues](https://github.com/czhaoca/airport-flight-data-collector/issues)
+- [Project Board](https://github.com/czhaoca/airport-flight-data-collector/projects)
+- [Discussions](https://github.com/czhaoca/airport-flight-data-collector/discussions)
