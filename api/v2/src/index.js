@@ -3,13 +3,13 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const compression = require('compression');
-const rateLimit = require('express-rate-limit');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const path = require('path');
 
 const { errorHandler } = require('./middleware/errorHandler');
 const { requestLogger } = require('./middleware/requestLogger');
+const { rateLimiters, dynamicRateLimiter } = require('./middleware/rateLimiter');
 const authRoutes = require('./routes/auth');
 const flightRoutes = require('./routes/flights');
 const airportRoutes = require('./routes/airports');
@@ -40,17 +40,8 @@ app.use(express.urlencoded({ extended: true }));
 // Request logging
 app.use(requestLogger);
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Apply rate limiting to API routes
-app.use('/api/v2', limiter);
+// Apply general rate limiting to all API routes
+app.use('/api/v2', rateLimiters.general);
 
 // API Documentation
 app.use('/api/v2/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
@@ -58,11 +49,11 @@ app.use('/api/v2/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
   customSiteTitle: 'Flight Data API v2 Documentation'
 }));
 
-// API Routes
-app.use('/api/v2/auth', authRoutes);
-app.use('/api/v2/flights', flightRoutes);
-app.use('/api/v2/airports', airportRoutes);
-app.use('/api/v2/statistics', statisticsRoutes);
+// API Routes with specific rate limiting
+app.use('/api/v2/auth', rateLimiters.auth, authRoutes);
+app.use('/api/v2/flights', rateLimiters.read, flightRoutes);
+app.use('/api/v2/airports', rateLimiters.read, airportRoutes);
+app.use('/api/v2/statistics', rateLimiters.expensive, statisticsRoutes);
 app.use('/api/v2/health', healthRoutes);
 
 // Root endpoint
