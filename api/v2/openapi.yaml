@@ -1,0 +1,716 @@
+openapi: 3.0.3
+info:
+  title: Airport Flight Data Collector API
+  description: |
+    RESTful API for accessing airport flight data including arrivals, departures,
+    delays, and cancellations. Supports data from SFO, YYZ, and YVR airports.
+  version: 2.0.0
+  contact:
+    name: API Support
+    url: https://github.com/czhaoca/airport-flight-data-collector/issues
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3001/api/v2
+    description: Development server
+  - url: https://api.flightdata.example.com/v2
+    description: Production server
+
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+
+tags:
+  - name: Authentication
+    description: Authentication endpoints
+  - name: Flights
+    description: Flight data operations
+  - name: Airports
+    description: Airport information
+  - name: Statistics
+    description: Statistical data and analytics
+  - name: System
+    description: System health and status
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login to get JWT token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  example: secretpassword
+      responses:
+        '200':
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /flights:
+    get:
+      tags:
+        - Flights
+      summary: Get flight data
+      description: Retrieve flight data with various filters
+      parameters:
+        - $ref: '#/components/parameters/Airport'
+        - $ref: '#/components/parameters/FlightType'
+        - $ref: '#/components/parameters/StartDate'
+        - $ref: '#/components/parameters/EndDate'
+        - $ref: '#/components/parameters/Status'
+        - $ref: '#/components/parameters/Airline'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Sort'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlightListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /flights/{id}:
+    get:
+      tags:
+        - Flights
+      summary: Get specific flight
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Flight ID
+      responses:
+        '200':
+          description: Flight found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlightDetailResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /flights/search:
+    post:
+      tags:
+        - Flights
+      summary: Advanced flight search
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlightSearchRequest'
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlightListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+  /airports:
+    get:
+      tags:
+        - Airports
+      summary: Get supported airports
+      responses:
+        '200':
+          description: List of airports
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AirportListResponse'
+
+  /airports/{code}:
+    get:
+      tags:
+        - Airports
+      summary: Get airport details
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Z]{3}$'
+          description: IATA airport code
+      responses:
+        '200':
+          description: Airport details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AirportDetailResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /statistics/summary:
+    get:
+      tags:
+        - Statistics
+      summary: Get flight statistics summary
+      parameters:
+        - $ref: '#/components/parameters/Period'
+        - $ref: '#/components/parameters/Airport'
+      responses:
+        '200':
+          description: Statistics summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsSummaryResponse'
+
+  /statistics/delays:
+    get:
+      tags:
+        - Statistics
+      summary: Get delay statistics
+      parameters:
+        - $ref: '#/components/parameters/Period'
+        - $ref: '#/components/parameters/Airport'
+        - $ref: '#/components/parameters/Airline'
+      responses:
+        '200':
+          description: Delay statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DelayStatisticsResponse'
+
+  /health:
+    get:
+      tags:
+        - System
+      summary: Health check
+      security: []
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: System is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  parameters:
+    Airport:
+      name: airport
+      in: query
+      description: Filter by airport code
+      schema:
+        type: string
+        enum: [SFO, YYZ, YVR]
+    
+    FlightType:
+      name: type
+      in: query
+      description: Filter by flight type
+      schema:
+        type: string
+        enum: [arrival, departure]
+    
+    StartDate:
+      name: startDate
+      in: query
+      description: Start date (inclusive)
+      schema:
+        type: string
+        format: date
+        example: '2025-01-01'
+    
+    EndDate:
+      name: endDate
+      in: query
+      description: End date (inclusive)
+      schema:
+        type: string
+        format: date
+        example: '2025-01-31'
+    
+    Status:
+      name: status
+      in: query
+      description: Filter by flight status
+      schema:
+        type: string
+        enum: [ON_TIME, DELAYED, CANCELLED, DEPARTED, ARRIVED, BOARDING]
+    
+    Airline:
+      name: airline
+      in: query
+      description: Filter by airline code
+      schema:
+        type: string
+        example: 'UA'
+    
+    Limit:
+      name: limit
+      in: query
+      description: Maximum number of results
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 1000
+        default: 100
+    
+    Offset:
+      name: offset
+      in: query
+      description: Number of results to skip
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    
+    Sort:
+      name: sort
+      in: query
+      description: Sort order
+      schema:
+        type: string
+        enum: [scheduledTime, actualTime, flightNumber, status]
+        default: scheduledTime
+    
+    Period:
+      name: period
+      in: query
+      description: Time period for statistics
+      schema:
+        type: string
+        enum: [24h, 7d, 30d, 90d, 1y]
+        default: 7d
+
+  schemas:
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token
+        refreshToken:
+          type: string
+          description: JWT refresh token
+        expiresIn:
+          type: integer
+          description: Token expiration time in seconds
+        tokenType:
+          type: string
+          default: Bearer
+
+    Flight:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique flight identifier
+        flightNumber:
+          type: string
+          example: 'UA123'
+        airline:
+          $ref: '#/components/schemas/Airline'
+        origin:
+          type: string
+          example: 'LAX'
+        destination:
+          type: string
+          example: 'SFO'
+        scheduledTime:
+          type: string
+          format: date-time
+        actualTime:
+          type: string
+          format: date-time
+          nullable: true
+        estimatedTime:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+          enum: [ON_TIME, DELAYED, CANCELLED, DEPARTED, ARRIVED, BOARDING]
+        gate:
+          type: string
+          nullable: true
+        terminal:
+          type: string
+          nullable: true
+        type:
+          type: string
+          enum: [arrival, departure]
+        aircraft:
+          type: string
+          nullable: true
+        delay:
+          type: integer
+          description: Delay in minutes
+          nullable: true
+
+    Airline:
+      type: object
+      properties:
+        code:
+          type: string
+          example: 'UA'
+        name:
+          type: string
+          example: 'United Airlines'
+
+    Airport:
+      type: object
+      properties:
+        code:
+          type: string
+          example: 'SFO'
+        name:
+          type: string
+          example: 'San Francisco International Airport'
+        city:
+          type: string
+          example: 'San Francisco'
+        country:
+          type: string
+          example: 'USA'
+        timezone:
+          type: string
+          example: 'America/Los_Angeles'
+        coordinates:
+          type: object
+          properties:
+            latitude:
+              type: number
+              format: float
+            longitude:
+              type: number
+              format: float
+
+    FlightListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Flight'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    FlightDetailResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/Flight'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    FlightSearchRequest:
+      type: object
+      properties:
+        airports:
+          type: array
+          items:
+            type: string
+        types:
+          type: array
+          items:
+            type: string
+            enum: [arrival, departure]
+        dateRange:
+          type: object
+          properties:
+            start:
+              type: string
+              format: date
+            end:
+              type: string
+              format: date
+        flightNumbers:
+          type: array
+          items:
+            type: string
+        airlines:
+          type: array
+          items:
+            type: string
+        statuses:
+          type: array
+          items:
+            type: string
+
+    AirportListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Airport'
+
+    AirportDetailResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/Airport'
+
+    StatisticsSummaryResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            period:
+              type: string
+            totalFlights:
+              type: integer
+            byAirport:
+              type: object
+              additionalProperties:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  arrivals:
+                    type: integer
+                  departures:
+                    type: integer
+            byStatus:
+              type: object
+              additionalProperties:
+                type: integer
+            byDate:
+              type: object
+              additionalProperties:
+                type: integer
+
+    DelayStatisticsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            period:
+              type: string
+            averageDelay:
+              type: number
+              format: float
+              description: Average delay in minutes
+            delaysByHour:
+              type: object
+              additionalProperties:
+                type: number
+            delaysByAirline:
+              type: object
+              additionalProperties:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  averageDelay:
+                    type: number
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        version:
+          type: string
+        uptime:
+          type: number
+        database:
+          type: object
+          properties:
+            connected:
+              type: boolean
+            provider:
+              type: string
+        services:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+              lastCheck:
+                type: string
+                format: date-time
+
+    Pagination:
+      type: object
+      properties:
+        limit:
+          type: integer
+        offset:
+          type: integer
+        total:
+          type: integer
+        hasNext:
+          type: boolean
+        hasPrev:
+          type: boolean
+
+    ResponseMeta:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        requestId:
+          type: string
+        cached:
+          type: boolean
+          default: false
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+  responses:
+    BadRequestError:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: BAD_REQUEST
+            message: Invalid date format
+    
+    UnauthorizedError:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: UNAUTHORIZED
+            message: Invalid or missing authentication token
+    
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: NOT_FOUND
+            message: Flight not found
+    
+    RateLimitError:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          description: Request limit per window
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          description: Remaining requests in window
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          description: Time when rate limit resets
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: RATE_LIMIT_EXCEEDED
+            message: Too many requests. Please try again later.
