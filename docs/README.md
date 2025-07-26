@@ -54,50 +54,27 @@ Welcome to the comprehensive documentation for the Airport Flight Data Collector
 - Check [Troubleshooting Guide](credentials-troubleshooting.md)
 - Run diagnostic: `node diagnose-db.js`
 
-## 📊 Database Comparison
+## 📊 Quick Reference
+
+### Database Comparison
 
 | Feature | Local (File) | Cloudflare D1 | Oracle Cloud |
-|---------|--------------|---------------|--------------|
+|---------|--------------|---------------|---------------|
 | **Setup Time** | 0 minutes | 10 minutes | 20 minutes |
 | **Free Tier** | Unlimited | 5GB | 2×20GB |
 | **Best For** | Development | Edge/Serverless | Enterprise |
-| **Query Speed** | Slow | Fast | Fastest |
+| **Query Speed** | N/A | Fast | Fastest |
+| **SQL Support** | ❌ | ✅ SQLite | ✅ Full SQL |
 | **Complexity** | None | Low | Medium |
 
-## 🔍 Common Tasks
+### Supported Airports
 
-### Test Your Setup
-```bash
-# Test database connection
-node scripts/test-database.js
+| Airport | Code | API Status | Data Availability |
+|---------|------|------------|-------------------|
+| San Francisco | SFO | ✅ Stable | Previous day |
+| Toronto Pearson | YYZ | ✅ Stable | Current day |
+| Vancouver | YVR | ✅ Stable | Current day |
 
-# Run health check
-node scripts/health-check.js
-
-# Monitor database
-node scripts/monitor.js --check-once
-```
-
-### Manage Data
-```bash
-# Check data retention
-node scripts/data-retention.js --dry-run
-
-# Archive old data
-node scripts/data-retention.js
-
-# Export data
-node scripts/export-data.js --format json
-```
-
-### API Access
-```bash
-# Start API server
-node scripts/api-server.js
-
-# Start health endpoint
-node scripts/health-check.js
-```
 
 ## 🛠️ Scripts Reference
 

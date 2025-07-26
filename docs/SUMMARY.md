@@ -1,98 +1,134 @@
-# Project Summary
+# Documentation Summary
 
-## What's Been Done
+## 📚 Documentation Structure
 
-### 1. Refactored to SOLID Architecture
-- **Single Responsibility**: Each class has one clear purpose
-- **Open/Closed**: Easy to extend without modifying existing code
-- **Liskov Substitution**: Implementations can be swapped freely
-- **Interface Segregation**: Small, focused interfaces
-- **Dependency Inversion**: Depend on abstractions, not concretions
+This documentation has been reorganized into clear, topic-based guides:
 
-### 2. New Directory Structure
-```
-src/
-├── application/       # Application services and commands
-├── core/             # Business logic, interfaces, models
-├── domain/           # Airport-specific collectors
-├── infrastructure/   # External dependencies (HTTP, storage, logging)
-└── legacy/           # Original implementation (preserved)
+### 1. **Getting Started** ([getting-started.md](getting-started.md))
+- Quick start guide (5 minutes)
+- Prerequisites and installation
+- Basic concepts and architecture overview
+- Common use cases
+- First steps
 
-tests/
-├── fixtures/         # Test data
-├── integration/      # Integration tests
-└── unit/            # Unit tests
+### 2. **Project Information** ([project-info.md](project-info.md))
+- Project overview and mission
+- Current status and roadmap
+- Technical decisions and rationale
+- Technology stack
+- Success stories and use cases
 
-logs/                # Application logs (git-ignored)
-data/                # Historical flight data (preserved)
-```
+### 3. **Architecture & Design** ([architecture.md](architecture.md))
+- SOLID principles implementation
+- System architecture and design patterns
+- Directory structure
+- Core components and interfaces
+- Extension points for new features
+- API documentation
 
-### 3. Key Features Added
-- **Dependency Injection**: ServiceContainer manages all dependencies
-- **Multiple HTTP Clients**: NodeFetch and Curl implementations
-- **Multiple Storage Backends**: Local files and GitHub
-- **Retry Logic**: Exponential backoff for transient failures
-- **Comprehensive Logging**: Structured logs with levels
-- **Environment Configuration**: Flexible deployment options
-- **Better Error Handling**: Custom error types with context
+### 4. **Database Setup** ([database-setup.md](database-setup.md))
+- Comprehensive guide for all storage options
+- Provider comparison (Local, Cloudflare D1, Oracle Cloud)
+- Step-by-step setup instructions
+- Configuration reference
+- Migration guides
+- Security best practices
 
-### 4. Backward Compatibility
-- Original entry points (`src/collect_sfo_data.js`, `src/collect_yyz_data.js`) now wrap the new architecture
-- All npm scripts continue to work as before
-- GitHub Actions workflows don't need changes
-- Historical data remains untouched
+### 5. **Operations Guide** ([operations.md](operations.md))
+- GitHub Actions automation
+- Monitoring and health checks
+- Data retention and archival
+- Performance optimization
+- Backup and recovery
+- Scaling strategies
+- Incident response
 
-### 5. Documentation Updates
-- **README.md**: Complete rewrite with new architecture
-- **ARCHITECTURE.md**: Detailed technical documentation
-- **MIGRATION.md**: Guide for upgrading from legacy code
-- **Legacy README**: Documents the old implementation
+### 6. **Troubleshooting** ([troubleshooting.md](troubleshooting.md))
+- Comprehensive diagnostic tools
+- Common error messages and solutions
+- Platform-specific issues
+- Debug techniques
+- Getting help effectively
 
-### 6. Testing Infrastructure
-- Moved tests to `tests/` directory
-- Updated Jest configuration
-- Created example unit tests
-- Test fixtures separated from source code
+### 7. **Development Guide** ([development.md](development.md))
+- Setting up development environment
+- Adding new airports
+- Creating storage backends
+- Testing strategies
+- Code style guide
+- Contributing guidelines
 
-## Benefits
+### 8. **API Reference** ([api-reference.md](api-reference.md))
+- Complete API documentation
+- Interface definitions
+- Model specifications
+- Service documentation
+- Configuration options
+- Event system
 
-1. **Maintainability**: Clear separation of concerns
-2. **Testability**: Easy to mock dependencies
-3. **Extensibility**: Add new airports without modifying core
-4. **Flexibility**: Swap implementations easily
-5. **Reliability**: Better error handling and retry logic
+## 🎯 Quick Navigation
 
-## Usage Examples
+### For New Users
+1. Start with [Getting Started](getting-started.md)
+2. Choose storage in [Database Setup](database-setup.md)
+3. Check [Troubleshooting](troubleshooting.md) if issues arise
 
-### Basic Collection
-```bash
-npm run collect:sfo
-npm run collect:yyz
-npm run collect        # All airports
-```
+### For Developers
+1. Understand [Architecture](architecture.md)
+2. Review [API Reference](api-reference.md)
+3. Follow [Development Guide](development.md)
 
-### Advanced Usage
-```bash
-# Use curl for bot protection
-HTTP_CLIENT_TYPE=curl npm run collect
+### For Operations
+1. Deploy with [Operations Guide](operations.md)
+2. Monitor system health
+3. Handle incidents with runbooks
 
-# Enable verbose logging
-VERBOSE=true LOG_LEVEL=debug npm run collect
+## 🗂️ Legacy Documentation
 
-# Use GitHub storage
-STORAGE_TYPE=github GITHUB_TOKEN=xxx npm run collect
-```
+The following files have been consolidated into the new structure:
+- `credentials-quick-setup.md` → Merged into `database-setup.md`
+- `database-credentials-guide.md` → Merged into `database-setup.md`
+- `database-configuration.md` → Merged into `database-setup.md`
+- `database-setup-guide.md` → Merged into `database-setup.md`
+- `credentials-troubleshooting.md` → Expanded into `troubleshooting.md`
+- `github-actions-database-setup.md` → Merged into `operations.md`
+- `database-interface-usage.md` → Merged into `api-reference.md`
+- `ARCHITECTURE.md` and `API.md` → Combined into `architecture.md`
+- `MIGRATION.md` → Merged into `development.md`
+- `database-selection-analysis.md` → Merged into `project-info.md`
 
-### New Architecture Direct Usage
-```bash
-node src/application/commands/collect.js --help
-node src/application/commands/collect.js SFO --date 2025-07-24
-```
+## 📈 Documentation Improvements
 
-## Next Steps
+### What's New
+- **Better Organization**: Topic-based structure instead of scattered files
+- **Comprehensive Guides**: Each guide covers its topic completely
+- **More Examples**: Added practical examples throughout
+- **Enhanced Troubleshooting**: Expanded error solutions and diagnostics
+- **Developer Focus**: Added development guide with contribution guidelines
+- **Operations Ready**: Production deployment and maintenance covered
 
-1. **Add More Airports**: Create new collectors extending BaseAirportCollector
-2. **Add Database Storage**: Implement IStorageService for databases
-3. **Add Monitoring**: Integrate with monitoring services
-4. **Add Analytics**: Build data analysis tools
-5. **Improve Testing**: Add more unit and integration tests
+### Key Additions
+- Complete API reference with all interfaces
+- Expanded troubleshooting with platform-specific issues
+- Development guide for contributors
+- Operations runbooks and incident response
+- Project information with roadmap and decisions
+- Security best practices throughout
+
+## 🚀 Getting Started
+
+**New to the project?**
+→ Start with the [Getting Started Guide](getting-started.md)
+
+**Setting up a database?**
+→ See the [Database Setup Guide](database-setup.md)
+
+**Want to contribute?**
+→ Read the [Development Guide](development.md)
+
+**Running in production?**
+→ Follow the [Operations Guide](operations.md)
+
+---
+
+*Documentation Version: 2.0 | Last Updated: January 2025*

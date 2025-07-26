@@ -1,13 +1,25 @@
 name: Collect Flight Data (Database)
 
+# This workflow collects flight data from airports and saves it to configured databases
+# Supports multiple database providers: local SQLite, Oracle Cloud Infrastructure (OCI), and Cloudflare D1
 on:
   schedule:
+    # Schedule for YYZ (Toronto Pearson International Airport)
+    # Runs at 11:55 PM EST (4:55 UTC) to capture end-of-day flight data
     - cron: '55 4 * * *'  # 11:55 PM EST (4:55 UTC) for YYZ
+    
+    # Schedule for SFO (San Francisco International Airport)
+    # Runs at 6 AM PST (14:00 UTC) to capture morning flight data
     - cron: '0 14 * * *'  # 6 AM PST (14:00 UTC) for SFO
-  workflow_dispatch:  # Allows manual triggering
+    
+    # Schedule for YVR (Vancouver International Airport)
+    # Runs at 10 PM PST (6:00 UTC) to capture evening flight data
+    - cron: '0 6 * * *'  # 10 PM PST (6:00 UTC) for YVR
+    
+  workflow_dispatch:  # Allows manual triggering from GitHub Actions UI
     inputs:
       airport:
-        description: 'Airport to collect (yyz, sfo, or all)'
+        description: 'Airport to collect (yyz, sfo, yvr, or all)'
         required: false
         default: 'all'
       db_provider:
@@ -142,10 +154,94 @@ jobs:
           *.log
           data/sfo/*.error
 
+  # Job to collect flight data from YVR (Vancouver International Airport)
+  collect-yvr-data:
+    runs-on: ubuntu-latest
+    # Run this job only if:
+    # 1. Triggered by the YVR schedule (10 PM PST)
+    # 2. Manually triggered for YVR or all airports
+    if: |
+      (github.event.schedule == '0 6 * * *' || 
+       (github.event_name == 'workflow_dispatch' && 
+        (github.event.inputs.airport == 'yvr' || github.event.inputs.airport == 'all')))
+    steps:
+    # Step 1: Checkout the repository code
+    - uses: actions/checkout@v4
+    
+    # Step 2: Setup Node.js environment
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    # Step 3: Install project dependencies
+    - name: Install dependencies
+      run: npm ci
+      
+    # Step 4: Configure database environment variables
+    - name: Setup Database Environment
+      run: |
+        echo "Setting up database environment..."
+        # Set database provider: manual input, secret, or default to 'local'
+        echo "DB_PROVIDER=${{ github.event.inputs.db_provider || secrets.DB_PROVIDER || 'local' }}" >> $GITHUB_ENV
+        # Set production environment
+        echo "NODE_ENV=production" >> $GITHUB_ENV
+        # Set table prefix for database tables
+        echo "DB_TABLE_PREFIX=${{ secrets.DB_TABLE_PREFIX || 'airport_flight_data' }}" >> $GITHUB_ENV
+        
+    # Step 5: Configure Oracle Cloud Infrastructure (OCI) Database
+    - name: Configure OCI (if applicable)
+      if: env.DB_PROVIDER == 'oci'
+      run: |
+        # OCI Database credentials
+        echo "OCI_USER=${{ secrets.OCI_USER }}" >> $GITHUB_ENV
+        echo "OCI_PASSWORD=${{ secrets.OCI_PASSWORD }}" >> $GITHUB_ENV
+        echo "OCI_CONNECTION_STRING=${{ secrets.OCI_CONNECTION_STRING }}" >> $GITHUB_ENV
+        # Optional wallet configuration
+        if [ -n "${{ secrets.OCI_WALLET_LOCATION }}" ]; then
+          echo "OCI_WALLET_LOCATION=${{ secrets.OCI_WALLET_LOCATION }}" >> $GITHUB_ENV
+          echo "OCI_WALLET_PASSWORD=${{ secrets.OCI_WALLET_PASSWORD }}" >> $GITHUB_ENV
+        fi
+        
+    # Step 6: Configure Cloudflare D1 Database
+    - name: Configure Cloudflare (if applicable)
+      if: env.DB_PROVIDER == 'cloudflare'
+      run: |
+        # Cloudflare D1 credentials
+        echo "CF_ACCOUNT_ID=${{ secrets.CF_ACCOUNT_ID }}" >> $GITHUB_ENV
+        echo "CF_DATABASE_ID=${{ secrets.CF_DATABASE_ID }}" >> $GITHUB_ENV
+        echo "CF_API_TOKEN=${{ secrets.CF_API_TOKEN }}" >> $GITHUB_ENV
+        # Optional Worker URL
+        if [ -n "${{ secrets.CF_WORKER_URL }}" ]; then
+          echo "CF_WORKER_URL=${{ secrets.CF_WORKER_URL }}" >> $GITHUB_ENV
+        fi
+        
+    # Step 7: Test database connection
+    - name: Test Database Connection
+      run: node scripts/test-database.js
+      continue-on-error: true
+      
+    # Step 8: Execute data collection for YVR airport
+    - name: Collect YVR Data
+      run: npm run collect:yvr
+      env:
+        # GitHub PAT for API access
+        GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
+        
+    # Step 9: Archive logs on failure
+    - name: Upload logs on failure
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: yvr-collection-logs
+        path: |
+          *.log
+          data/yvr/*.error
+
   database-health-check:
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch'
-    needs: [collect-yyz-data, collect-sfo-data]
+    needs: [collect-yyz-data, collect-sfo-data, collect-yvr-data]
     steps:
     - uses: actions/checkout@v4
     
@@ -175,16 +271,24 @@ jobs:
           echo "CF_API_TOKEN=${{ secrets.CF_API_TOKEN }}" >> $GITHUB_ENV
         fi
         
+    # Step 6: Execute comprehensive database health check
+    # This verifies:
+    # - Database connectivity
+    # - Data was properly saved
+    # - Recent data statistics
     - name: Run Database Health Check
       run: |
         node -e "
         const { getDatabase } = require('./lib/database');
         (async () => {
+          // Initialize database connection
           const db = await getDatabase();
+          
+          // Check database health status
           const health = await db.healthCheck();
           console.log('Database Health:', JSON.stringify(health, null, 2));
           
-          // Get recent data stats
+          // Get data from the last 7 days
           const endDate = new Date().toISOString().split('T')[0];
           const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
           
@@ -194,12 +298,14 @@ jobs:
             filters: { limit: 100 }
           });
           
+          // Display summary statistics
           console.log('\\nRecent Data Summary:');
           console.log('- Total records (last 7 days):', recentData.length);
           
           const airports = [...new Set(recentData.map(r => r.airport_code))];
           console.log('- Airports:', airports.join(', '));
           
+          // Clean up connection
           await db.disconnect();
         })().catch(console.error);
         "
