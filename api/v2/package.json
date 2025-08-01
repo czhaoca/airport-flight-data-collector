@@ -7,6 +7,8 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "test": "jest",
+    "test:integration": "jest tests/integration",
+    "test:watch": "jest --watch",
     "lint": "eslint src",
     "generate-docs": "npx @redocly/openapi-cli preview-docs openapi.yaml",
     "validate-spec": "npx @redocly/openapi-cli lint openapi.yaml"
