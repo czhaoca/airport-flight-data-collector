@@ -66,6 +66,14 @@ This documentation has been reorganized into clear, topic-based guides:
 - Configuration options
 - Event system
 
+### 9. **Docker Guide** ([docker-guide.md](docker-guide.md))
+- Quick start with Docker Compose
+- Available Docker images
+- Building and running containers
+- Production deployment with Docker
+- Monitoring and health checks
+- Troubleshooting Docker issues
+
 ## 🎯 Quick Navigation
 
 ### For New Users

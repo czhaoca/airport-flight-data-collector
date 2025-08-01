@@ -8,6 +8,7 @@ This guide covers the operational aspects of running the Airport Flight Data Col
 - [Data Retention & Archival](#data-retention--archival)
 - [Performance Optimization](#performance-optimization)
 - [Backup & Recovery](#backup--recovery)
+- [Docker Deployment](#docker-deployment)
 - [Scaling Strategies](#scaling-strategies)
 - [Maintenance Tasks](#maintenance-tasks)
 - [Incident Response](#incident-response)
@@ -590,6 +591,154 @@ node scripts/restore.js --date 2025-07-20 --dry-run
    # Verify counts match
    node scripts/compare-counts.js --before --after
    ```
+
+## Docker Deployment
+
+### Overview
+
+The project provides comprehensive Docker support for containerized deployments. This enables consistent environments, easy scaling, and simplified operations.
+
+For detailed Docker setup and configuration, see the [Docker Guide](docker-guide.md).
+
+### Quick Start with Docker Compose
+
+```bash
+# Clone repository
+git clone https://github.com/yourusername/airport-flight-data-collector.git
+cd airport-flight-data-collector
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your database credentials
+
+# Start all services
+docker-compose up -d
+
+# Check status
+docker-compose ps
+docker-compose logs -f
+```
+
+Services available:
+- API: http://localhost:3001
+- Dashboard: http://localhost:3000
+- Grafana: http://localhost:3003
+
+### Production Docker Deployment
+
+#### 1. Use Production Compose File
+
+```yaml
+# docker-compose.prod.yml
+version: '3.8'
+
+services:
+  api:
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+```
+
+```bash
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+```
+
+#### 2. Enable HTTPS with Traefik
+
+```yaml
+services:
+  traefik:
+    image: traefik:v2.10
+    command:
+      - "--providers.docker=true"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.email=your@email.com"
+    ports:
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+
+  api:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.yourdomain.com`)"
+      - "traefik.http.routers.api.tls=true"
+      - "traefik.http.routers.api.tls.certresolver=myresolver"
+```
+
+#### 3. Container Orchestration
+
+For Kubernetes deployment:
+
+```yaml
+# k8s/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flight-collector-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: flight-collector-api
+  template:
+    metadata:
+      labels:
+        app: flight-collector-api
+    spec:
+      containers:
+      - name: api
+        image: flight-collector-api:latest
+        ports:
+        - containerPort: 3001
+        env:
+        - name: DATABASE_TYPE
+          valueFrom:
+            secretKeyRef:
+              name: flight-collector-secrets
+              key: database-type
+```
+
+### Docker Monitoring
+
+Monitor container health and resource usage:
+
+```bash
+# Real-time stats
+docker stats
+
+# Container health
+docker inspect flight-collector-api | jq '.[0].State.Health'
+
+# Prometheus metrics
+curl http://localhost:3001/metrics
+```
+
+### Docker Maintenance
+
+```bash
+# Update images
+git pull
+docker-compose build --no-cache
+docker-compose up -d
+
+# Clean up
+docker system prune -a --volumes
+
+# Backup volumes
+docker run --rm \
+  -v flight-data:/data \
+  -v $(pwd)/backups:/backup \
+  alpine tar czf /backup/data-$(date +%Y%m%d).tar.gz /data
+```
 
 ## Scaling Strategies
 
