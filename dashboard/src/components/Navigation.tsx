@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Plane, BarChart3, Map, Activity } from 'lucide-react';
+import { Plane, BarChart3, Map, Activity, Radio } from 'lucide-react';
 
 export function Navigation() {
   const pathname = usePathname();
@@ -14,6 +14,11 @@ export function Navigation() {
       href: '/',
       label: 'Live Flights',
       icon: Plane,
+    },
+    {
+      href: '/live-traffic',
+      label: 'Live Traffic',
+      icon: Radio,
     },
     {
       href: '/historical',

@@ -25,67 +25,55 @@ Current Quarter: **Q2 2025**
 - [x] Comprehensive documentation reorganization
 - [x] GitHub Actions database workflows
 
+## Completed in Q2 2025
+
+### ✅ Q2 2025 - Dashboard & API (Completed)
+
+#### Web Dashboard (100% complete)
+- [x] React/Next.js frontend
+- [x] Real-time flight status display
+- [x] Historical data visualization with Chart.js
+- [x] Airport comparison views
+- [x] Performance metrics dashboard
+- [x] Mobile-responsive design
+
+#### REST API v2 (100% complete)
+- [x] OpenAPI 3.0 specification
+- [x] RESTful endpoints for all operations
+- [x] JWT authentication
+- [x] Rate limiting and quotas
+- [x] Pagination and filtering
+- [x] API versioning
+
+#### Infrastructure (100% complete)
+- [x] Docker support with multi-stage builds
+- [x] Performance monitoring with Grafana
+- [x] Centralized logging with Winston
+
 ## Current Quarter
 
-### 🚧 Q2 2025 - Dashboard & API (In Progress)
+### 🚧 Q3 2025 - Analytics & Real-time (In Progress)
 
-#### Web Dashboard (40% complete)
-- [ ] React/Next.js frontend
-- [ ] Real-time flight status display
-- [ ] Historical data visualization with Chart.js
-- [ ] Airport comparison views
-- [ ] Performance metrics dashboard
-- [ ] Mobile-responsive design
-
-#### REST API v2 (20% complete)
-- [ ] OpenAPI 3.0 specification
-- [ ] RESTful endpoints for all operations
-- [ ] JWT authentication
-- [ ] Rate limiting and quotas
-- [ ] Pagination and filtering
-- [ ] API versioning
-
-#### New Airports (Planning)
-- [ ] **LAX** - Los Angeles International Airport
-  - API research completed
-  - Endpoint: https://www.flylax.com/api/flights
-  - Implementation pending
-- [ ] **ORD** - Chicago O'Hare International Airport
-  - API discovery in progress
-  - Complex terminal structure
-- [ ] **ATL** - Hartsfield-Jackson Atlanta International
-  - Research phase
-  - World's busiest airport
-
-#### Infrastructure
-- [ ] Docker support with multi-stage builds
-- [ ] Performance monitoring with Grafana
-- [ ] Centralized logging with Winston
-
-## Upcoming Quarters
-
-### 📅 Q3 2025 - Analytics & Real-time
-
-#### Data Analytics Engine
+#### Data Analytics Engine (0% complete)
 - [ ] Delay prediction models using historical data
 - [ ] Pattern detection algorithms
 - [ ] Airline performance scoring
 - [ ] Route efficiency analysis
 - [ ] Seasonal trend identification
 
-#### Real-time Features
-- [ ] WebSocket support for live updates
-- [ ] Server-sent events for flight status
-- [ ] Real-time delay notifications
+#### Real-time Features (75% complete)
+- [x] WebSocket support for live updates
+- [x] Server-sent events for flight status
+- [x] Real-time delay notifications
 - [ ] Live airport traffic visualization
 
-#### API Enhancements
+#### API Enhancements (0% complete)
 - [ ] GraphQL API with subscriptions
 - [ ] Batch operations support
 - [ ] Webhook integrations
 - [ ] Data export API (CSV, Parquet, JSON)
 
-#### Developer Tools
+#### Developer Tools (0% complete)
 - [ ] Jupyter notebook integration
 - [ ] Python SDK
 - [ ] R package
@@ -269,6 +257,7 @@ We welcome community input on our roadmap! Here's how you can contribute:
 
 ## Update History
 
+- **2025-08-01**: Completed Q2 2025 milestones, started Q3 2025 real-time features
 - **2025-01-26**: Updated roadmap with detailed Q2 2025 progress
 - **2025-01-15**: Major roadmap revision after v2.0 release
 - **2024-12-01**: Initial roadmap creation

@@ -18,6 +18,7 @@ const airportsRouter = require('./routes/airports');
 const statisticsRouter = require('./routes/statistics');
 const authRouter = require('./routes/auth');
 const sseRouter = require('./routes/sse');
+const exportRouter = require('./routes/export');
 
 // Check dependencies
 try {
@@ -101,6 +102,7 @@ app.use('/api/v2/flights', flightsRouter);
 app.use('/api/v2/airports', airportsRouter);
 app.use('/api/v2/statistics', statisticsRouter);
 app.use('/api/v2/sse', sseRouter);
+app.use('/api/v2/export', exportRouter);
 
 // WebSocket statistics endpoint
 app.get('/api/v2/websocket/stats', (req, res) => {
