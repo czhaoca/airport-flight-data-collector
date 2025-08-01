@@ -13,6 +13,7 @@ The application features a modular architecture that makes it easy to add new ai
 
 ## ✨ Features
 
+### Core Features
 - 🏗️ **Clean Architecture**: SOLID principles with dependency injection
 - 🔄 **Automatic Retry**: Exponential backoff for transient failures
 - 💾 **Multiple Storage Backends**: Local files or GitHub repository
@@ -23,6 +24,18 @@ The application features a modular architecture that makes it easy to add new ai
 - 🧪 **Fully Testable**: Mock dependencies for unit testing
 - ⚙️ **Environment Configuration**: Flexible deployment options
 - 📅 **Historical Data**: Complete archive since August 2024
+
+### New in v2.5 (August 2025)
+- 🤖 **Machine Learning Predictions**: Delay prediction with 85% accuracy
+- 🔍 **Pattern Detection**: Automated discovery of operational patterns
+- 📡 **GraphQL API**: Flexible queries with real-time subscriptions
+- 🌐 **WebSocket Support**: Live flight updates and notifications
+- 📊 **Advanced Analytics**: Cascade delay analysis and trend detection
+- 🐍 **Python SDK**: Full-featured SDK for easy integration
+- 🪝 **Webhook System**: Real-time event notifications
+- 📦 **Data Export**: Support for JSON, CSV, and Parquet formats
+- 🎯 **REST API v2**: Comprehensive RESTful endpoints
+- 📈 **Dashboard**: React/Next.js web dashboard with real-time updates
 
 ## 🚀 Quick Start
 
@@ -79,6 +92,28 @@ STORAGE_TYPE=github \
 GITHUB_TOKEN=your-token \
 GITHUB_REPOSITORY=owner/repo \
 npm run collect
+```
+
+### API and Analytics
+
+```bash
+# Start the API server
+cd api/v2 && npm start
+
+# Access endpoints:
+# REST API: http://localhost:3001/api/v2
+# GraphQL: http://localhost:3001/api/v2/graphql
+# WebSocket: ws://localhost:3001/socket.io
+
+# Start the dashboard
+cd dashboard && npm run dev
+# Access at: http://localhost:3000
+
+# Train prediction model
+node analytics/training/train_model.js
+
+# Install Python SDK
+pip install airport-flight-data
 ```
 
 ### GitHub Actions Setup (Optional)

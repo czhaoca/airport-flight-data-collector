@@ -10,6 +10,7 @@ const SocketServer = require('./websocket/socket-server');
 const { getInstance: getEventEmitter } = require('./websocket/event-emitter');
 const errorHandler = require('./middleware/errorHandler');
 const rateLimiter = require('./middleware/rateLimiter');
+const { createApolloServer, createWebSocketServer, setupEventIntegration } = require('./graphql/server');
 
 // Import routers
 const healthRouter = require('./routes/health');
@@ -19,6 +20,10 @@ const statisticsRouter = require('./routes/statistics');
 const authRouter = require('./routes/auth');
 const sseRouter = require('./routes/sse');
 const exportRouter = require('./routes/export');
+const batchRouter = require('./routes/batch');
+const webhooksRouter = require('./routes/webhooks');
+const predictionsRouter = require('./routes/predictions');
+const patternsRouter = require('./routes/patterns');
 
 // Check dependencies
 try {
@@ -103,6 +108,10 @@ app.use('/api/v2/airports', airportsRouter);
 app.use('/api/v2/statistics', statisticsRouter);
 app.use('/api/v2/sse', sseRouter);
 app.use('/api/v2/export', exportRouter);
+app.use('/api/v2/batch', batchRouter);
+app.use('/api/v2/webhooks', webhooksRouter);
+app.use('/api/v2/predictions', predictionsRouter);
+app.use('/api/v2/patterns', patternsRouter);
 
 // WebSocket statistics endpoint
 app.get('/api/v2/websocket/stats', (req, res) => {
@@ -192,7 +201,23 @@ api_memory_usage_bytes ${process.memoryUsage().heapUsed}
 
 // Start server
 if (require.main === module) {
-  server.listen(PORT, () => {
+  server.listen(PORT, async () => {
+    // Initialize GraphQL
+    try {
+      const apolloServer = await createApolloServer(server);
+      apolloServer.applyMiddleware({ app, path: '/api/v2/graphql' });
+      
+      // Create WebSocket server for GraphQL subscriptions
+      const wsServer = createWebSocketServer(server);
+      
+      // Setup event integration for GraphQL subscriptions
+      setupEventIntegration();
+      
+      apiLogger.info('GraphQL server initialized');
+    } catch (error) {
+      apiLogger.error('Failed to initialize GraphQL server', error);
+    }
+    
     apiLogger.info(`API server with WebSocket support running at http://localhost:${PORT}`);
     console.log(`\nAPI server running at http://localhost:${PORT}`);
     console.log('\nREST Endpoints:');
@@ -200,6 +225,9 @@ if (require.main === module) {
     console.log(`  GET  http://localhost:${PORT}/api/v2/flights`);
     console.log(`  GET  http://localhost:${PORT}/api/v2/airports`);
     console.log(`  GET  http://localhost:${PORT}/api/v2/statistics`);
+    console.log('\nGraphQL Endpoint:');
+    console.log(`  POST http://localhost:${PORT}/api/v2/graphql`);
+    console.log(`  WS   ws://localhost:${PORT}/graphql (subscriptions)`);
     console.log('\nWebSocket endpoint:');
     console.log(`  ws://localhost:${PORT}/socket.io`);
     console.log('\nWebSocket events:');

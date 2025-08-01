@@ -1,0 +1,638 @@
+# GraphQL Schema for Airport Flight Data API
+
+scalar DateTime
+scalar JSON
+
+type Query {
+  # Flight queries
+  flights(
+    airport: String
+    type: FlightType
+    startDate: DateTime
+    endDate: DateTime
+    airline: String
+    status: FlightStatus
+    limit: Int = 100
+    offset: Int = 0
+  ): FlightConnection!
+  
+  flight(id: ID!): Flight
+  
+  searchFlights(
+    flightNumber: String!
+    date: DateTime
+    airport: String
+  ): [Flight!]!
+  
+  # Airport queries
+  airports: [Airport!]!
+  airport(code: String!): Airport
+  
+  # Statistics queries
+  statistics(
+    startDate: DateTime
+    endDate: DateTime
+  ): SystemStatistics!
+  
+  airportStatistics(
+    airport: String!
+    startDate: DateTime
+    endDate: DateTime
+    granularity: Granularity = DAILY
+  ): AirportStatistics!
+  
+  # Delay queries
+  delays(
+    airport: String
+    minDelay: Int = 15
+    startDate: DateTime
+    endDate: DateTime
+  ): [DelayedFlight!]!
+  
+  # Ranking queries
+  rankings(
+    category: RankingCategory!
+    metric: RankingMetric!
+    startDate: DateTime
+    endDate: DateTime
+    limit: Int = 10
+  ): [Ranking!]!
+  
+  # Prediction queries
+  delayPrediction(flightData: FlightDataInput!): DelayPrediction!
+  upcomingPredictions(airport: String!, hours: Int = 24): UpcomingPredictions!
+  highRiskFlights(airport: String!, hours: Int = 12): [FlightPrediction!]!
+  predictionMetrics: PredictionMetrics!
+}
+
+type Mutation {
+  # Authentication
+  login(email: String!, password: String!): AuthPayload!
+  refreshToken(token: String!): AuthPayload!
+  
+  # Webhook management
+  createWebhook(input: CreateWebhookInput!): Webhook!
+  updateWebhook(id: ID!, input: UpdateWebhookInput!): Webhook!
+  deleteWebhook(id: ID!): DeleteResult!
+  testWebhook(id: ID!): TestResult!
+  
+  # Batch operations
+  createBatchJob(operations: [BatchOperationInput!]!): BatchJob!
+  cancelBatchJob(id: ID!): BatchJob!
+  
+  # Collection triggers
+  triggerCollection(airports: [String!]!, options: JSON): CollectionJob!
+}
+
+type Subscription {
+  # Real-time flight updates
+  flightUpdated(
+    airports: [String!]
+    flights: [String!]
+    airlines: [String!]
+  ): FlightUpdate!
+  
+  # Delay notifications
+  flightDelayed(
+    airports: [String!]
+    minDelay: Int = 15
+  ): DelayNotification!
+  
+  # Cancellation notifications
+  flightCancelled(
+    airports: [String!]
+  ): CancellationNotification!
+  
+  # Gate changes
+  gateChanged(
+    airports: [String!]
+  ): GateChangeNotification!
+  
+  # Airport statistics updates
+  airportStatsUpdated(
+    airports: [String!]!
+  ): AirportStatsUpdate!
+  
+  # System alerts
+  systemAlert(
+    severity: [AlertSeverity!]
+  ): SystemAlert!
+  
+  # Delay prediction updates
+  delayPredictionUpdate(
+    airports: [String!]
+    minProbability: Float = 0.5
+  ): DelayPredictionUpdate!
+}
+
+# Types
+
+type Flight {
+  id: ID!
+  flightNumber: String!
+  airline: Airline!
+  origin: Airport!
+  destination: Airport!
+  scheduledTime: DateTime!
+  actualTime: DateTime
+  estimatedTime: DateTime
+  status: FlightStatus!
+  gate: String
+  terminal: String
+  aircraft: Aircraft
+  delay: Delay
+  cancellation: Cancellation
+  baggage: BaggageInfo
+  checkIn: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type FlightConnection {
+  edges: [FlightEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type FlightEdge {
+  node: Flight!
+  cursor: String!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+type Airport {
+  code: String!
+  name: String!
+  city: String!
+  country: String!
+  timezone: String!
+  coordinates: Coordinates!
+  terminals: [String!]!
+  airlines: [Airline!]!
+  destinations: [Airport!]!
+  statistics(
+    startDate: DateTime
+    endDate: DateTime
+  ): AirportStatistics
+}
+
+type Airline {
+  code: String!
+  name: String!
+  country: String
+  alliance: String
+  fleetSize: Int
+  destinations: Int
+  statistics(
+    startDate: DateTime
+    endDate: DateTime
+  ): AirlineStatistics
+}
+
+type Aircraft {
+  model: String!
+  registration: String
+  type: String
+  capacity: Int
+}
+
+type Coordinates {
+  latitude: Float!
+  longitude: Float!
+}
+
+type Delay {
+  minutes: Int!
+  reason: String
+  type: DelayType!
+  severity: DelaySeverity!
+}
+
+type Cancellation {
+  reason: String!
+  code: String
+  timestamp: DateTime!
+}
+
+type BaggageInfo {
+  claim: String
+  estimatedTime: DateTime
+}
+
+type SystemStatistics {
+  totalAirports: Int!
+  totalFlights: Int!
+  totalAirlines: Int!
+  activeFlights: Int!
+  delayedFlights: Int!
+  cancelledFlights: Int!
+  onTimePercentage: Float!
+  averageDelay: Float!
+  lastUpdate: DateTime!
+}
+
+type AirportStatistics {
+  airport: Airport!
+  period: DateRange!
+  totalFlights: Int!
+  departures: Int!
+  arrivals: Int!
+  delayedFlights: Int!
+  cancelledFlights: Int!
+  onTimePercentage: Float!
+  averageDelay: Float!
+  busiestHour: Int!
+  topDestinations: [DestinationStat!]!
+  topAirlines: [AirlineStat!]!
+  hourlyDistribution: [HourlyStat!]!
+  dailyTrend: [DailyStat!]!
+}
+
+type AirlineStatistics {
+  airline: Airline!
+  period: DateRange!
+  totalFlights: Int!
+  delayedFlights: Int!
+  cancelledFlights: Int!
+  onTimePercentage: Float!
+  averageDelay: Float!
+  topRoutes: [RouteStat!]!
+}
+
+type DestinationStat {
+  airport: Airport!
+  flights: Int!
+  percentage: Float!
+}
+
+type AirlineStat {
+  airline: Airline!
+  flights: Int!
+  percentage: Float!
+  onTimePercentage: Float!
+}
+
+type HourlyStat {
+  hour: Int!
+  flights: Int!
+  delays: Int!
+}
+
+type DailyStat {
+  date: DateTime!
+  flights: Int!
+  delays: Int!
+  cancellations: Int!
+  onTimePercentage: Float!
+}
+
+type RouteStat {
+  origin: Airport!
+  destination: Airport!
+  flights: Int!
+  onTimePercentage: Float!
+  averageDelay: Float!
+}
+
+type DateRange {
+  start: DateTime!
+  end: DateTime!
+}
+
+type DelayedFlight {
+  flight: Flight!
+  delay: Delay!
+  newTime: DateTime!
+  impact: String
+}
+
+type Ranking {
+  rank: Int!
+  entity: RankingEntity!
+  metric: Float!
+  change: Int
+}
+
+union RankingEntity = Airport | Airline | Route
+
+type Route {
+  origin: Airport!
+  destination: Airport!
+  distance: Float!
+  averageFlightTime: Float!
+}
+
+# Webhook types
+type Webhook {
+  id: ID!
+  url: String!
+  events: [WebhookEvent!]!
+  filters: JSON
+  secret: String!
+  active: Boolean!
+  createdAt: DateTime!
+  lastDelivery: DateTime
+  deliveryAttempts: Int!
+  failureCount: Int!
+}
+
+# Batch types
+type BatchJob {
+  id: ID!
+  status: BatchJobStatus!
+  createdAt: DateTime!
+  completedAt: DateTime
+  totalOperations: Int!
+  completedOperations: Int!
+  progress: Float!
+  results: [BatchResult!]
+  errors: [BatchError!]
+}
+
+type BatchResult {
+  operation: JSON!
+  result: JSON!
+}
+
+type BatchError {
+  operation: JSON!
+  error: String!
+}
+
+type CollectionJob {
+  id: ID!
+  status: BatchJobStatus!
+  airports: [String!]!
+  createdAt: DateTime!
+  results: [CollectionResult!]
+}
+
+type CollectionResult {
+  airport: String!
+  success: Boolean!
+  flightCount: Int
+  error: String
+}
+
+# Auth types
+type AuthPayload {
+  token: String!
+  refreshToken: String!
+  user: User!
+  expiresIn: Int!
+}
+
+type User {
+  id: ID!
+  email: String!
+  name: String
+  role: UserRole!
+  createdAt: DateTime!
+}
+
+# Utility types
+type DeleteResult {
+  success: Boolean!
+  message: String
+}
+
+type TestResult {
+  success: Boolean!
+  message: String!
+  responseTime: Int
+}
+
+# Real-time update types
+type FlightUpdate {
+  flight: Flight!
+  previousStatus: FlightStatus
+  changes: [String!]!
+  timestamp: DateTime!
+}
+
+type DelayNotification {
+  flight: Flight!
+  delay: Delay!
+  previousDelay: Int
+  impact: String!
+  timestamp: DateTime!
+}
+
+type CancellationNotification {
+  flight: Flight!
+  cancellation: Cancellation!
+  alternativeFlights: [Flight!]
+  timestamp: DateTime!
+}
+
+type GateChangeNotification {
+  flight: Flight!
+  previousGate: String
+  newGate: String!
+  terminal: String
+  timestamp: DateTime!
+}
+
+type AirportStatsUpdate {
+  airport: Airport!
+  stats: AirportStatistics!
+  changes: JSON!
+  timestamp: DateTime!
+}
+
+type SystemAlert {
+  id: ID!
+  severity: AlertSeverity!
+  type: AlertType!
+  title: String!
+  message: String!
+  affectedAirports: [String!]
+  timestamp: DateTime!
+  resolvedAt: DateTime
+}
+
+# Enums
+enum FlightType {
+  DEPARTURE
+  ARRIVAL
+}
+
+enum FlightStatus {
+  SCHEDULED
+  BOARDING
+  DEPARTED
+  AIRBORNE
+  LANDED
+  ARRIVED
+  DELAYED
+  CANCELLED
+  DIVERTED
+}
+
+enum Granularity {
+  HOURLY
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum DelayType {
+  WEATHER
+  TECHNICAL
+  OPERATIONAL
+  SECURITY
+  ATC
+  OTHER
+}
+
+enum DelaySeverity {
+  MINOR # < 30 min
+  MODERATE # 30-120 min
+  SEVERE # > 120 min
+}
+
+enum RankingCategory {
+  AIRPORTS
+  AIRLINES
+  ROUTES
+}
+
+enum RankingMetric {
+  ONTIME
+  DELAYS
+  TRAFFIC
+  CANCELLATIONS
+}
+
+enum BatchJobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum WebhookEvent {
+  FLIGHT_DELAYED
+  FLIGHT_CANCELLED
+  FLIGHT_STATUS_CHANGE
+  FLIGHT_GATE_CHANGE
+  AIRPORT_STATS
+  COLLECTION_COMPLETED
+  SYSTEM_ALERT
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  API_USER
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+}
+
+enum AlertType {
+  SYSTEM
+  WEATHER
+  CAPACITY
+  SECURITY
+  TECHNICAL
+}
+
+# Prediction types
+type DelayPrediction {
+  delayProbability: Float!
+  expectedDelayMinutes: Int!
+  riskLevel: RiskLevel!
+  confidence: Float!
+  factors: [PredictionFactor!]!
+}
+
+type PredictionFactor {
+  factor: String!
+  impact: String!
+  value: Float!
+}
+
+type FlightPrediction {
+  flightId: String!
+  flightNumber: String!
+  prediction: DelayPrediction
+  error: String
+}
+
+type UpcomingPredictions {
+  airport: String!
+  timeRange: String!
+  totalFlights: Int!
+  predictions: [FlightPrediction!]!
+}
+
+type PredictionMetrics {
+  isModelTrained: Boolean!
+  lastTrainingDate: DateTime
+  modelVersion: String!
+  features: [String!]!
+  performance: ModelPerformance!
+}
+
+type ModelPerformance {
+  accuracy: Float!
+  precision: Float!
+  recall: Float!
+  f1Score: Float!
+}
+
+type DelayPredictionUpdate {
+  flight: Flight!
+  prediction: DelayPrediction!
+  previousPrediction: DelayPrediction
+  timestamp: DateTime!
+}
+
+# Enums
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+# Input types
+input FlightDataInput {
+  flightNumber: String!
+  airline: String!
+  origin: String!
+  destination: String!
+  scheduledTime: DateTime!
+  aircraft: String
+}
+
+input CreateWebhookInput {
+  url: String!
+  events: [WebhookEvent!]!
+  filters: JSON
+  secret: String
+}
+
+input UpdateWebhookInput {
+  url: String
+  events: [WebhookEvent!]
+  filters: JSON
+  active: Boolean
+}
+
+input BatchOperationInput {
+  method: String!
+  endpoint: String!
+  body: JSON
+}
