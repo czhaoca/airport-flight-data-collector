@@ -201,6 +201,69 @@ class ApiClient {
     const response = await this.client.get('/health');
     return response.data;
   }
+
+  // Historical data endpoint
+  async getHistoricalData(airport: string, startDate: string, endDate: string) {
+    const [overview, airlines, routes, delays] = await Promise.all([
+      this.getStatisticsOverview({ airport, startDate, endDate, groupBy: 'day' }),
+      this.getAirlineStatistics({ airport, startDate, endDate }),
+      this.getRouteStatistics({ airport, startDate, endDate, limit: 10 }),
+      this.getDelayStatistics({ airport, startDate, endDate }),
+    ]);
+
+    // Transform the data for the charts
+    const dailyVolume = overview.data?.map((day: any) => ({
+      date: day.date,
+      arrivals: day.arrivals,
+      departures: day.departures,
+    })) || [];
+
+    const dailyDelays = overview.data?.map((day: any) => ({
+      date: day.date,
+      avgDelayMinutes: day.avgDelay,
+      delayedFlights: day.delayedFlights,
+      totalFlights: day.totalFlights,
+    })) || [];
+
+    const hourlyDistribution = Array.from({ length: 24 }, (_, hour) => {
+      const hourData = overview.hourlyData?.find((h: any) => h.hour === hour) || {};
+      return {
+        hour,
+        arrivals: hourData.arrivals || 0,
+        departures: hourData.departures || 0,
+      };
+    });
+
+    const airlinePerformance = airlines.data?.map((airline: any) => ({
+      airline: airline.airline,
+      onTimePercentage: airline.onTimePercentage,
+      flightCount: airline.totalFlights,
+    })) || [];
+
+    const topRoutes = routes.data?.map((route: any) => ({
+      origin: route.origin,
+      destination: route.destination,
+      flightCount: route.flightCount,
+      onTimePercentage: route.onTimePercentage,
+      avgDelay: route.avgDelay,
+    })) || [];
+
+    const summary = {
+      totalFlights: overview.summary?.totalFlights || 0,
+      onTimeRate: overview.summary?.onTimePercentage || 0,
+      avgDelay: Math.round(overview.summary?.avgDelay || 0),
+      cancellationRate: overview.summary?.cancellationRate || 0,
+    };
+
+    return {
+      summary,
+      dailyVolume,
+      dailyDelays,
+      hourlyDistribution,
+      airlinePerformance,
+      topRoutes,
+    };
+  }
 }
 
 export const apiClient = new ApiClient();

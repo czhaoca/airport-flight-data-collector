@@ -26,7 +26,7 @@ export function LiveFlightsDisplay({
 
   const { data, isLoading, error, refetch } = useQuery<LiveFlights>({
     queryKey: ['liveFlights', airport, selectedTab],
-    queryFn: () => apiClient.getLiveFlights(airport, selectedTab),
+    queryFn: () => apiClient.getLiveFlights(airport, selectedTab === 'arrivals' ? 'arrival' : 'departure'),
     refetchInterval: autoRefresh ? refreshInterval : false,
   });
 

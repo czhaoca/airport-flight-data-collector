@@ -15,7 +15,10 @@ export interface Flight {
   scheduledTime: string;
   actualTime?: string;
   status: 'scheduled' | 'delayed' | 'cancelled' | 'landed' | 'departed' | 'boarding' | 'in_flight';
-  aircraft?: string;
+  aircraft?: string | {
+    type: string;
+    registration?: string;
+  };
   duration?: number;
   distance?: number;
 }

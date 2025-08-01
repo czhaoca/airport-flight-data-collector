@@ -86,7 +86,11 @@ export function FlightCard({ flight, onClick }: FlightCardProps) {
           {flight.aircraft && (
             <div className="text-right">
               <p className="text-sm text-gray-600">Aircraft</p>
-              <p className="font-medium">{flight.aircraft}</p>
+              <p className="font-medium">
+                {typeof flight.aircraft === 'string' 
+                  ? flight.aircraft 
+                  : flight.aircraft.type}
+              </p>
             </div>
           )}
         </div>
