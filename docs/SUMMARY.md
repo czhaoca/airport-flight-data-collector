@@ -82,6 +82,14 @@ This documentation has been reorganized into clear, topic-based guides:
 - Optimization strategies
 - Troubleshooting performance issues
 
+### 11. **Dashboard Guide** ([dashboard-guide.md](dashboard-guide.md))
+- Dashboard overview and navigation
+- Real-time flight monitoring
+- Historical data analysis
+- Airport comparison tools
+- Setting up alerts and notifications
+- Data export and reporting
+
 ## 🎯 Quick Navigation
 
 ### For New Users
