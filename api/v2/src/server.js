@@ -24,6 +24,8 @@ const batchRouter = require('./routes/batch');
 const webhooksRouter = require('./routes/webhooks');
 const predictionsRouter = require('./routes/predictions');
 const patternsRouter = require('./routes/patterns');
+const metricsRouter = require('./routes/metrics');
+const { metricsMiddleware } = require('./middleware/metrics');
 
 // Check dependencies
 try {
@@ -92,6 +94,9 @@ app.use(express.urlencoded({ extended: true }));
 // Request logging
 app.use(requestLogger);
 
+// Metrics middleware
+app.use(metricsMiddleware);
+
 // Rate limiting (skip for health checks)
 app.use((req, res, next) => {
   if (req.path === '/api/v2/health') {
@@ -112,6 +117,7 @@ app.use('/api/v2/batch', batchRouter);
 app.use('/api/v2/webhooks', webhooksRouter);
 app.use('/api/v2/predictions', predictionsRouter);
 app.use('/api/v2/patterns', patternsRouter);
+app.use('/api/v2/metrics', metricsRouter);
 
 // WebSocket statistics endpoint
 app.get('/api/v2/websocket/stats', (req, res) => {
@@ -122,16 +128,7 @@ app.get('/api/v2/websocket/stats', (req, res) => {
   });
 });
 
-// Metrics endpoint for Prometheus
-app.get('/api/v2/metrics', async (req, res) => {
-  try {
-    const metrics = await generateMetrics();
-    res.set('Content-Type', 'text/plain');
-    res.send(metrics);
-  } catch (error) {
-    res.status(500).send('Error generating metrics');
-  }
-});
+// Metrics are now handled by the metrics router
 
 // Root endpoint
 app.get('/api/v2', (req, res) => {
@@ -170,34 +167,12 @@ app.use((req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
-// Helper function to generate Prometheus metrics
-async function generateMetrics() {
+// Update WebSocket metrics periodically
+setInterval(() => {
   const wsStats = socketServer.getStats();
-  
-  return `
-# HELP api_websocket_connections_total Total number of WebSocket connections
-# TYPE api_websocket_connections_total gauge
-api_websocket_connections_total ${wsStats.connectedClients}
-
-# HELP api_websocket_rooms_total Total number of WebSocket rooms
-# TYPE api_websocket_rooms_total gauge
-api_websocket_rooms_total ${wsStats.totalRooms}
-
-# HELP api_websocket_subscriptions_total Total subscriptions by type
-# TYPE api_websocket_subscriptions_total gauge
-api_websocket_subscriptions_total{type="airports"} ${wsStats.subscriptions.airports}
-api_websocket_subscriptions_total{type="flights"} ${wsStats.subscriptions.flights}
-api_websocket_subscriptions_total{type="routes"} ${wsStats.subscriptions.routes}
-
-# HELP api_uptime_seconds API server uptime in seconds
-# TYPE api_uptime_seconds gauge
-api_uptime_seconds ${process.uptime()}
-
-# HELP api_memory_usage_bytes Memory usage in bytes
-# TYPE api_memory_usage_bytes gauge
-api_memory_usage_bytes ${process.memoryUsage().heapUsed}
-`;
-}
+  const { metrics } = require('./middleware/metrics');
+  metrics.websocketConnections.set(wsStats.connectedClients);
+}, 5000);
 
 // Start server
 if (require.main === module) {

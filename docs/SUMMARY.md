@@ -74,6 +74,14 @@ This documentation has been reorganized into clear, topic-based guides:
 - Monitoring and health checks
 - Troubleshooting Docker issues
 
+### 10. **Performance Monitoring** ([performance-monitoring.md](performance-monitoring.md))
+- Prometheus metrics collection
+- Grafana dashboard setup
+- Performance monitoring script
+- Alert configuration
+- Optimization strategies
+- Troubleshooting performance issues
+
 ## 🎯 Quick Navigation
 
 ### For New Users
