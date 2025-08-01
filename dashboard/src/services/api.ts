@@ -202,6 +202,19 @@ class ApiClient {
     return response.data;
   }
 
+  // System metrics
+  async getSystemMetrics() {
+    const response = await this.client.get('/metrics/system');
+    return response.data;
+  }
+
+  async getMetricsTimeSeries(timeRange: '1h' | '6h' | '24h' | '7d') {
+    const response = await this.client.get('/metrics/timeseries', {
+      params: { range: timeRange },
+    });
+    return response.data;
+  }
+
   // Historical data endpoint
   async getHistoricalData(airport: string, startDate: string, endDate: string) {
     const [overview, airlines, routes, delays] = await Promise.all([

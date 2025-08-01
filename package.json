@@ -23,7 +23,9 @@
     "@octokit/rest": "^18.5.3",
     "node-fetch": "^2.6.1",
     "oracledb": "^6.9.0",
-    "puppeteer": "^24.15.0"
+    "puppeteer": "^24.15.0",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "jest": "^30.0.5"

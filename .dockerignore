@@ -1,0 +1,60 @@
+# Git
+.git
+.gitignore
+.github
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+.npm
+.yarn
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+
+# Build outputs
+dist
+build
+.next
+out
+
+# Test coverage
+coverage
+.nyc_output
+
+# Logs
+logs
+*.log
+
+# Documentation
+docs
+*.md
+!README.md
+
+# Data files (will be mounted as volumes)
+data/*
+!data/.gitkeep
+
+# Temporary files
+tmp
+temp
+*.tmp
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Monitoring configs (will be mounted)
+monitoring/prometheus.yml
+monitoring/grafana/*
