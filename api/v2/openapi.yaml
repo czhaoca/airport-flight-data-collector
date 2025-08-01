@@ -2,9 +2,10 @@ openapi: 3.0.3
 info:
   title: Airport Flight Data Collector API
   description: |
-    RESTful API for accessing airport flight data including arrivals, departures,
-    delays, and cancellations. Supports data from SFO, YYZ, and YVR airports.
-  version: 2.0.0
+    Comprehensive REST and GraphQL API for accessing flight data, predictions, and analytics.
+    Features include real-time flight status, ML-based delay predictions, pattern detection,
+    data export, webhook integrations, and advanced analytics for SFO, YYZ, and YVR airports.
+  version: 2.5.0
   contact:
     name: API Support
     url: https://github.com/czhaoca/airport-flight-data-collector/issues
@@ -31,6 +32,18 @@ tags:
     description: Airport information
   - name: Statistics
     description: Statistical data and analytics
+  - name: Predictions
+    description: ML-based delay predictions and risk assessment
+  - name: Patterns
+    description: Pattern detection and operational insights
+  - name: Export
+    description: Data export in multiple formats
+  - name: Webhooks
+    description: Webhook management and event notifications
+  - name: Batch
+    description: Batch operations for bulk processing
+  - name: Monitoring
+    description: System metrics and monitoring endpoints
   - name: System
     description: System health and status
 
@@ -235,6 +248,497 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DelayStatisticsResponse'
+
+  /predictions/delay:
+    post:
+      tags:
+        - Predictions
+      summary: Predict delay for a flight
+      description: Get ML-based delay prediction for a specific flight
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DelayPredictionRequest'
+      responses:
+        '200':
+          description: Delay prediction generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DelayPredictionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /predictions/batch:
+    post:
+      tags:
+        - Predictions
+      summary: Batch delay predictions
+      description: Get delay predictions for multiple flights at once
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchPredictionRequest'
+      responses:
+        '200':
+          description: Batch predictions generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchPredictionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /predictions/upcoming:
+    get:
+      tags:
+        - Predictions
+      summary: Get predictions for upcoming flights
+      description: Retrieve delay predictions for flights in the next few hours
+      parameters:
+        - $ref: '#/components/parameters/Airport'
+        - name: hours
+          in: query
+          description: Number of hours ahead to look
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 24
+            default: 6
+        - name: minRisk
+          in: query
+          description: Minimum risk level to include
+          schema:
+            type: string
+            enum: [low, medium, high]
+      responses:
+        '200':
+          description: Upcoming flight predictions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpcomingPredictionsResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /predictions/high-risk:
+    get:
+      tags:
+        - Predictions
+      summary: Get high-risk flight alerts
+      description: Retrieve flights with high delay probability
+      parameters:
+        - $ref: '#/components/parameters/Airport'
+        - name: threshold
+          in: query
+          description: Minimum delay probability threshold
+          schema:
+            type: number
+            minimum: 0.5
+            maximum: 1.0
+            default: 0.8
+      responses:
+        '200':
+          description: High-risk flight alerts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HighRiskAlertsResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /predictions/metrics:
+    get:
+      tags:
+        - Predictions
+      summary: Get model performance metrics
+      description: Retrieve ML model accuracy and performance statistics
+      responses:
+        '200':
+          description: Model performance metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelMetricsResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /patterns:
+    get:
+      tags:
+        - Patterns
+      summary: Get detected patterns
+      description: Retrieve currently detected operational patterns
+      parameters:
+        - name: refresh
+          in: query
+          description: Force refresh of pattern analysis
+          schema:
+            type: boolean
+            default: false
+        - name: type
+          in: query
+          description: Filter by pattern type
+          schema:
+            type: string
+            enum: [temporal, spatial, operational, anomaly, cascading, seasonal]
+      responses:
+        '200':
+          description: Current patterns
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatternsResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /patterns/summary:
+    get:
+      tags:
+        - Patterns
+      summary: Get pattern analysis summary
+      description: High-level summary of detected patterns and insights
+      responses:
+        '200':
+          description: Pattern analysis summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatternSummaryResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /patterns/type/{type}:
+    get:
+      tags:
+        - Patterns
+      summary: Get patterns by type
+      description: Retrieve patterns of a specific type
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [temporal, spatial, operational, anomaly, cascading, seasonal]
+          description: Pattern type
+      responses:
+        '200':
+          description: Patterns of specified type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatternsByTypeResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /patterns/insights:
+    get:
+      tags:
+        - Patterns
+      summary: Get actionable insights
+      description: Retrieve actionable insights from pattern analysis
+      responses:
+        '200':
+          description: Actionable insights
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatternInsightsResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /patterns/alerts:
+    get:
+      tags:
+        - Patterns
+      summary: Get real-time pattern alerts
+      description: Retrieve active pattern-based alerts
+      responses:
+        '200':
+          description: Active pattern alerts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatternAlertsResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /patterns/analyze:
+    post:
+      tags:
+        - Patterns
+      summary: Custom pattern analysis
+      description: Analyze patterns for a custom date range
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatternAnalysisRequest'
+      responses:
+        '200':
+          description: Custom pattern analysis results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatternAnalysisResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /export/flights:
+    get:
+      tags:
+        - Export
+      summary: Export flight data
+      description: Export flight data in various formats
+      parameters:
+        - $ref: '#/components/parameters/Airport'
+        - $ref: '#/components/parameters/StartDate'
+        - $ref: '#/components/parameters/EndDate'
+        - name: format
+          in: query
+          description: Export format
+          schema:
+            type: string
+            enum: [json, csv, parquet]
+            default: json
+        - name: fields
+          in: query
+          description: Comma-separated list of fields to include
+          schema:
+            type: string
+            example: 'flightNumber,airline,status,delay'
+      responses:
+        '200':
+          description: Flight data export
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportResponse'
+            text/csv:
+              schema:
+                type: string
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /export/statistics:
+    get:
+      tags:
+        - Export
+      summary: Export statistics
+      description: Export statistical summaries and analytics
+      parameters:
+        - $ref: '#/components/parameters/Period'
+        - $ref: '#/components/parameters/Airport'
+        - name: format
+          in: query
+          description: Export format
+          schema:
+            type: string
+            enum: [json, csv]
+            default: json
+      responses:
+        '200':
+          description: Statistics export
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsExportResponse'
+            text/csv:
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /webhooks:
+    get:
+      tags:
+        - Webhooks
+      summary: List webhooks
+      description: Get all registered webhooks for the authenticated user
+      responses:
+        '200':
+          description: List of webhooks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookListResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    post:
+      tags:
+        - Webhooks
+      summary: Create webhook
+      description: Register a new webhook for event notifications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookCreateRequest'
+      responses:
+        '201':
+          description: Webhook created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /webhooks/{id}:
+    get:
+      tags:
+        - Webhooks
+      summary: Get webhook details
+      description: Retrieve details of a specific webhook
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Webhook ID
+      responses:
+        '200':
+          description: Webhook details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    put:
+      tags:
+        - Webhooks
+      summary: Update webhook
+      description: Update an existing webhook configuration
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Webhook ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookUpdateRequest'
+      responses:
+        '200':
+          description: Webhook updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    delete:
+      tags:
+        - Webhooks
+      summary: Delete webhook
+      description: Remove a webhook registration
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Webhook ID
+      responses:
+        '204':
+          description: Webhook deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /batch:
+    post:
+      tags:
+        - Batch
+      summary: Execute batch operations
+      description: Perform multiple operations in a single request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchRequest'
+      responses:
+        '200':
+          description: Batch operations completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /metrics:
+    get:
+      tags:
+        - Monitoring
+      summary: Get system metrics
+      description: Retrieve system performance and usage metrics
+      responses:
+        '200':
+          description: System metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemMetricsResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /websocket/stats:
+    get:
+      tags:
+        - Monitoring
+      summary: Get WebSocket statistics
+      description: Retrieve WebSocket connection and usage statistics
+      responses:
+        '200':
+          description: WebSocket statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebSocketStatsResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
 
   /health:
     get:
@@ -647,6 +1151,663 @@ components:
         cached:
           type: boolean
           default: false
+
+    DelayPredictionRequest:
+      type: object
+      required:
+        - scheduledTime
+        - airline
+        - origin
+      properties:
+        flightNumber:
+          type: string
+          example: 'UA123'
+        airline:
+          type: string
+          example: 'UA'
+        origin:
+          type: string
+          example: 'SFO'
+        destination:
+          type: string
+          example: 'LAX'
+        scheduledTime:
+          type: string
+          format: date-time
+          example: '2025-08-02T08:00:00Z'
+        aircraft:
+          type: string
+          example: 'B737'
+        gate:
+          type: string
+          example: 'A12'
+    
+    DelayPredictionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        prediction:
+          type: object
+          properties:
+            delayProbability:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 1
+              description: Probability of delay (0-1)
+            expectedDelayMinutes:
+              type: integer
+              minimum: 0
+              description: Expected delay in minutes
+            riskLevel:
+              type: string
+              enum: [low, medium, high]
+            confidence:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 1
+            factors:
+              type: array
+              items:
+                type: object
+                properties:
+                  factor:
+                    type: string
+                  impact:
+                    type: number
+                    format: float
+                  description:
+                    type: string
+
+    BatchPredictionRequest:
+      type: object
+      required:
+        - flights
+      properties:
+        flights:
+          type: array
+          items:
+            $ref: '#/components/schemas/DelayPredictionRequest'
+          maxItems: 100
+
+    BatchPredictionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        predictions:
+          type: array
+          items:
+            type: object
+            properties:
+              flightId:
+                type: string
+              prediction:
+                $ref: '#/components/schemas/DelayPredictionResponse/properties/prediction'
+              error:
+                type: string
+                nullable: true
+
+    UpcomingPredictionsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              flight:
+                $ref: '#/components/schemas/Flight'
+              prediction:
+                $ref: '#/components/schemas/DelayPredictionResponse/properties/prediction'
+        meta:
+          type: object
+          properties:
+            totalFlights:
+              type: integer
+            timeRange:
+              type: string
+            generatedAt:
+              type: string
+              format: date-time
+
+    HighRiskAlertsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        alerts:
+          type: array
+          items:
+            type: object
+            properties:
+              flight:
+                $ref: '#/components/schemas/Flight'
+              prediction:
+                $ref: '#/components/schemas/DelayPredictionResponse/properties/prediction'
+              alertLevel:
+                type: string
+                enum: [warning, critical]
+              message:
+                type: string
+
+    ModelMetricsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        metrics:
+          type: object
+          properties:
+            accuracy:
+              type: number
+              format: float
+            precision:
+              type: number
+              format: float
+            recall:
+              type: number
+              format: float
+            f1Score:
+              type: number
+              format: float
+            lastTrainingDate:
+              type: string
+              format: date
+            trainingDataSize:
+              type: integer
+            featuresUsed:
+              type: array
+              items:
+                type: string
+
+    PatternsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        patterns:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              type:
+                type: string
+                enum: [temporal, spatial, operational, anomaly, cascading, seasonal]
+              title:
+                type: string
+              description:
+                type: string
+              severity:
+                type: string
+                enum: [low, medium, high]
+              confidence:
+                type: number
+                format: float
+              startDate:
+                type: string
+                format: date
+              endDate:
+                type: string
+                format: date
+              affectedFlights:
+                type: integer
+              impact:
+                type: object
+                properties:
+                  averageDelay:
+                    type: number
+                  cancellationRate:
+                    type: number
+
+    PatternSummaryResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        summary:
+          type: object
+          properties:
+            totalPatterns:
+              type: integer
+            byType:
+              type: object
+              additionalProperties:
+                type: integer
+            bySeverity:
+              type: object
+              additionalProperties:
+                type: integer
+            recentTrends:
+              type: array
+              items:
+                type: string
+            recommendedActions:
+              type: array
+              items:
+                type: string
+
+    PatternsByTypeResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        type:
+          type: string
+        patterns:
+          type: array
+          items:
+            $ref: '#/components/schemas/PatternsResponse/properties/patterns/items'
+
+    PatternInsightsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        insights:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              description:
+                type: string
+              priority:
+                type: string
+                enum: [low, medium, high]
+              actionable:
+                type: boolean
+              recommendation:
+                type: string
+              estimatedImpact:
+                type: string
+
+    PatternAlertsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        alerts:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              type:
+                type: string
+              message:
+                type: string
+              severity:
+                type: string
+                enum: [warning, critical]
+              timestamp:
+                type: string
+                format: date-time
+              affectedAirports:
+                type: array
+                items:
+                  type: string
+
+    PatternAnalysisRequest:
+      type: object
+      required:
+        - startDate
+        - endDate
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        airports:
+          type: array
+          items:
+            type: string
+        analysisTypes:
+          type: array
+          items:
+            type: string
+            enum: [temporal, spatial, operational, anomaly, cascading, seasonal]
+
+    PatternAnalysisResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        analysis:
+          type: object
+          properties:
+            period:
+              type: object
+              properties:
+                start:
+                  type: string
+                  format: date
+                end:
+                  type: string
+                  format: date
+            patterns:
+              $ref: '#/components/schemas/PatternsResponse/properties/patterns'
+            summary:
+              $ref: '#/components/schemas/PatternSummaryResponse/properties/summary'
+            insights:
+              $ref: '#/components/schemas/PatternInsightsResponse/properties/insights'
+
+    ExportResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        exportId:
+          type: string
+        downloadUrl:
+          type: string
+        format:
+          type: string
+        recordCount:
+          type: integer
+        fileSize:
+          type: integer
+          description: File size in bytes
+        expiresAt:
+          type: string
+          format: date-time
+
+    StatisticsExportResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        exportId:
+          type: string
+        downloadUrl:
+          type: string
+        format:
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+        period:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+
+    WebhookListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        webhooks:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookResponse/properties/webhook'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    WebhookCreateRequest:
+      type: object
+      required:
+        - url
+        - events
+      properties:
+        url:
+          type: string
+          format: uri
+          example: 'https://your-app.com/webhook'
+        events:
+          type: array
+          items:
+            type: string
+            enum: [flight.delayed, flight.cancelled, flight.status_changed, pattern.detected, prediction.high_risk]
+          minItems: 1
+        filters:
+          type: object
+          properties:
+            airports:
+              type: array
+              items:
+                type: string
+            airlines:
+              type: array
+              items:
+                type: string
+            minDelay:
+              type: integer
+              minimum: 0
+        active:
+          type: boolean
+          default: true
+        description:
+          type: string
+
+    WebhookUpdateRequest:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        events:
+          type: array
+          items:
+            type: string
+        filters:
+          type: object
+          properties:
+            airports:
+              type: array
+              items:
+                type: string
+            airlines:
+              type: array
+              items:
+                type: string
+            minDelay:
+              type: integer
+        active:
+          type: boolean
+        description:
+          type: string
+
+    WebhookResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        webhook:
+          type: object
+          properties:
+            id:
+              type: string
+            url:
+              type: string
+            events:
+              type: array
+              items:
+                type: string
+            filters:
+              type: object
+            active:
+              type: boolean
+            description:
+              type: string
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+            lastTriggered:
+              type: string
+              format: date-time
+              nullable: true
+            deliveryStats:
+              type: object
+              properties:
+                totalDeliveries:
+                  type: integer
+                successfulDeliveries:
+                  type: integer
+                failedDeliveries:
+                  type: integer
+                lastSuccess:
+                  type: string
+                  format: date-time
+                  nullable: true
+                lastFailure:
+                  type: string
+                  format: date-time
+                  nullable: true
+
+    BatchRequest:
+      type: object
+      required:
+        - operations
+      properties:
+        operations:
+          type: array
+          items:
+            type: object
+            required:
+              - operation
+              - path
+            properties:
+              operation:
+                type: string
+                enum: [GET, POST, PUT, DELETE]
+              path:
+                type: string
+                example: '/flights?airport=SFO&limit=10'
+              body:
+                type: object
+                nullable: true
+              id:
+                type: string
+                description: Optional ID to correlate request with response
+          maxItems: 100
+
+    BatchResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                nullable: true
+              status:
+                type: integer
+              response:
+                type: object
+              error:
+                type: string
+                nullable: true
+        summary:
+          type: object
+          properties:
+            totalOperations:
+              type: integer
+            successfulOperations:
+              type: integer
+            failedOperations:
+              type: integer
+
+    SystemMetricsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        metrics:
+          type: object
+          properties:
+            api:
+              type: object
+              properties:
+                requestsPerMinute:
+                  type: number
+                averageResponseTime:
+                  type: number
+                errorRate:
+                  type: number
+                activeConnections:
+                  type: integer
+            database:
+              type: object
+              properties:
+                connectionPoolSize:
+                  type: integer
+                activeConnections:
+                  type: integer
+                queryTime:
+                  type: number
+            predictions:
+              type: object
+              properties:
+                predictionsPerHour:
+                  type: integer
+                averagePredictionTime:
+                  type: number
+                modelAccuracy:
+                  type: number
+            patterns:
+              type: object
+              properties:
+                patternsDetected:
+                  type: integer
+                lastAnalysisTime:
+                  type: string
+                  format: date-time
+            system:
+              type: object
+              properties:
+                cpuUsage:
+                  type: number
+                memoryUsage:
+                  type: number
+                diskUsage:
+                  type: number
+                uptime:
+                  type: integer
+
+    WebSocketStatsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        stats:
+          type: object
+          properties:
+            activeConnections:
+              type: integer
+            totalConnections:
+              type: integer
+            messagesPerMinute:
+              type: number
+            subscriptionsByType:
+              type: object
+              additionalProperties:
+                type: integer
+            connectionsByRoom:
+              type: object
+              additionalProperties:
+                type: integer
+            averageConnectionDuration:
+              type: number
+              description: Average connection duration in seconds
 
     Error:
       type: object
