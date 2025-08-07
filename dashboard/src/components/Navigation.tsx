@@ -3,11 +3,19 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Plane, BarChart3, Map, Activity, Radio } from 'lucide-react';
+import { Plane, BarChart3, Map, Activity, Radio, User, LogOut, Settings } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function Navigation() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const { user, logout, isAuthenticated } = useAuth();
+  
+  // Don't show navigation on login page
+  if (pathname === '/login') {
+    return null;
+  }
 
   const links = [
     {
@@ -67,6 +75,58 @@ export function Navigation() {
             </div>
           </div>
           
+          {/* User menu - Desktop */}
+          <div className="hidden sm:flex sm:items-center sm:ml-6">
+            {isAuthenticated && user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white">
+                    {user.email?.[0]?.toUpperCase() || 'U'}
+                  </div>
+                  <span className="ml-2 text-gray-700">{user.name || user.email}</span>
+                </button>
+                
+                {userMenuOpen && (
+                  <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                    <div className="py-1">
+                      <div className="px-4 py-2 text-sm text-gray-700 border-b">
+                        {user.email}
+                      </div>
+                      <Link
+                        href="/settings"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Settings
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          logout();
+                        }}
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="text-sm font-medium text-gray-500 hover:text-gray-700"
+              >
+                Sign In
+              </Link>
+            )}
+          </div>
+          
           {/* Mobile menu button */}
           <div className="flex items-center sm:hidden">
             <button
@@ -113,6 +173,41 @@ export function Navigation() {
                 </Link>
               );
             })}
+            
+            {/* Mobile user menu */}
+            {isAuthenticated && user && (
+              <div className="border-t border-gray-200 pt-3 pb-3">
+                <div className="px-4">
+                  <div className="flex items-center">
+                    <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white">
+                      {user.email?.[0]?.toUpperCase() || 'U'}
+                    </div>
+                    <div className="ml-3">
+                      <div className="text-base font-medium text-gray-800">{user.name || 'User'}</div>
+                      <div className="text-sm font-medium text-gray-500">{user.email}</div>
+                    </div>
+                  </div>
+                  <div className="mt-3 space-y-1">
+                    <Link
+                      href="/settings"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+                    >
+                      Settings
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        logout();
+                      }}
+                      className="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
