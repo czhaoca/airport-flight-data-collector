@@ -1,0 +1,33 @@
+apiVersion: v2
+name: flight-collector
+description: A Helm chart for Airport Flight Data Collector
+type: application
+version: 1.0.0
+appVersion: "2.3.0"
+keywords:
+  - flight-data
+  - analytics
+  - monitoring
+home: https://github.com/czhaoca/airport-flight-data-collector
+sources:
+  - https://github.com/czhaoca/airport-flight-data-collector
+maintainers:
+  - name: Flight Data Team
+    email: support@flightdata.example.com
+dependencies:
+  - name: redis
+    version: 17.11.3
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+  - name: postgresql
+    version: 12.5.8
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: prometheus
+    version: 23.1.0
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: prometheus.enabled
+  - name: grafana
+    version: 6.58.7
+    repository: https://grafana.github.io/helm-charts
+    condition: grafana.enabled

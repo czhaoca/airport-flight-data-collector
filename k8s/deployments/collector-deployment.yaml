@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: flight-collector
+  namespace: flight-data
+spec:
+  schedule: "0 */1 * * *"  # Run every hour
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: collector
+            image: flight-collector:latest
+            imagePullPolicy: IfNotPresent
+            command: ["node", "src/collect_all.js"]
+            envFrom:
+            - configMapRef:
+                name: flight-data-config
+            - secretRef:
+                name: flight-data-secrets
+            resources:
+              requests:
+                memory: "512Mi"
+                cpu: "250m"
+              limits:
+                memory: "1Gi"
+                cpu: "500m"
+            volumeMounts:
+            - name: data-volume
+              mountPath: /app/data
+          volumes:
+          - name: data-volume
+            persistentVolumeClaim:
+              claimName: flight-data-pvc
