@@ -86,5 +86,6 @@ module.exports = {
   verifyToken,
   verifyRefreshToken,
   authenticate,
+  authenticateRequest: authenticate, // Alias for backward compatibility
   optionalAuth
 };
