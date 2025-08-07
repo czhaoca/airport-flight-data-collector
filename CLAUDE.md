@@ -92,7 +92,7 @@ This file contains important context and reminders for Claude when working on th
 
 ## Next Priorities (Q2 2025)
 - Web dashboard (React/Next.js) - 40% complete
-- REST API v2 - 20% complete
+- REST API v1 - Development phase
 - New airports: LAX, ORD, ATL
 - Docker support
 - Performance monitoring

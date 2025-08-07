@@ -41,46 +41,46 @@ app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
 
 // Apply general rate limiting to all API routes
-app.use('/api/v2', rateLimiters.general);
+app.use('/api/v1', rateLimiters.general);
 
 // API Documentation
-app.use('/api/v2/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
+app.use('/api/v1/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
   customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'Flight Data API v2 Documentation'
+  customSiteTitle: 'Flight Data API v1 Documentation'
 }));
 
 // API Routes with specific rate limiting
-app.use('/api/v2/auth', rateLimiters.auth, authRoutes);
-app.use('/api/v2/flights', rateLimiters.read, flightRoutes);
-app.use('/api/v2/airports', rateLimiters.read, airportRoutes);
-app.use('/api/v2/statistics', rateLimiters.expensive, statisticsRoutes);
-app.use('/api/v2/health', healthRoutes);
+app.use('/api/v1/auth', rateLimiters.auth, authRoutes);
+app.use('/api/v1/flights', rateLimiters.read, flightRoutes);
+app.use('/api/v1/airports', rateLimiters.read, airportRoutes);
+app.use('/api/v1/statistics', rateLimiters.expensive, statisticsRoutes);
+app.use('/api/v1/health', healthRoutes);
 
 // Root endpoint
-app.get('/api/v2', (req, res) => {
+app.get('/api/v1', (req, res) => {
   res.json({
     name: 'Airport Flight Data API',
-    version: '2.0.0',
-    documentation: `${req.protocol}://${req.get('host')}/api/v2/docs`,
+    version: '1.0.0',
+    documentation: `${req.protocol}://${req.get('host')}/api/v1/docs`,
     endpoints: {
       auth: {
-        login: 'POST /api/v2/auth/login',
-        refresh: 'POST /api/v2/auth/refresh'
+        login: 'POST /api/v1/auth/login',
+        refresh: 'POST /api/v1/auth/refresh'
       },
       flights: {
-        list: 'GET /api/v2/flights',
-        get: 'GET /api/v2/flights/:id',
-        search: 'POST /api/v2/flights/search'
+        list: 'GET /api/v1/flights',
+        get: 'GET /api/v1/flights/:id',
+        search: 'POST /api/v1/flights/search'
       },
       airports: {
-        list: 'GET /api/v2/airports',
-        get: 'GET /api/v2/airports/:code'
+        list: 'GET /api/v1/airports',
+        get: 'GET /api/v1/airports/:code'
       },
       statistics: {
-        summary: 'GET /api/v2/statistics/summary',
-        delays: 'GET /api/v2/statistics/delays'
+        summary: 'GET /api/v1/statistics/summary',
+        delays: 'GET /api/v1/statistics/delays'
       },
-      health: 'GET /api/v2/health'
+      health: 'GET /api/v1/health'
     }
   });
 });
@@ -100,8 +100,8 @@ app.use(errorHandler);
 // Start server
 if (require.main === module) {
   app.listen(PORT, () => {
-    logger.info(`API v2 server started on port ${PORT}`);
-    logger.info(`Documentation available at http://localhost:${PORT}/api/v2/docs`);
+    logger.info(`API v1 server started on port ${PORT}`);
+    logger.info(`Documentation available at http://localhost:${PORT}/api/v1/docs`);
   });
 
   // Graceful shutdown

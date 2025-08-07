@@ -88,7 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.3.0] - 2025-06-01
 
 ### Added
-- REST API v2 with OpenAPI 3.0 specification
+- REST API v1 with OpenAPI 3.0 specification
 - JWT authentication system
 - Rate limiting and quota management
 - API versioning support

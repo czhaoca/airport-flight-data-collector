@@ -1,7 +1,7 @@
 {
-  "name": "airport-flight-data-api-v2",
-  "version": "2.0.0",
-  "description": "REST API v2 for Airport Flight Data Collector",
+  "name": "airport-flight-data-api",
+  "version": "1.0.0",
+  "description": "REST API v1 for Airport Flight Data Collector",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",

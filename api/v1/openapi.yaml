@@ -5,7 +5,7 @@ info:
     Comprehensive REST and GraphQL API for accessing flight data, predictions, and analytics.
     Features include real-time flight status, ML-based delay predictions, pattern detection,
     data export, webhook integrations, and advanced analytics for SFO, YYZ, and YVR airports.
-  version: 2.5.0
+  version: 1.0.0
   contact:
     name: API Support
     url: https://github.com/czhaoca/airport-flight-data-collector/issues
@@ -14,9 +14,9 @@ info:
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: http://localhost:3001/api/v2
+  - url: http://localhost:3001/api/v1
     description: Development server
-  - url: https://api.flightdata.example.com/v2
+  - url: https://api.flightdata.example.com/v1
     description: Production server
 
 security:

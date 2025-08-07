@@ -98,7 +98,7 @@ sudo systemctl enable grafana-server
 
 ### 1. Enable Metrics in API
 
-The API server exposes metrics at `/api/v2/metrics`:
+The API server exposes metrics at `/api/v1/metrics`:
 
 ```javascript
 // Metrics are automatically collected for:
@@ -117,7 +117,7 @@ scrape_configs:
   - job_name: 'flight-collector-api'
     static_configs:
       - targets: ['localhost:3001']
-    metrics_path: '/api/v2/metrics'
+    metrics_path: '/api/v1/metrics'
     scrape_interval: 15s
 ```
 
@@ -287,7 +287,7 @@ predict_linear(process_resident_memory_bytes[1d], 7*24*3600)
 ### Common Issues
 
 1. **Metrics not appearing**
-   - Check API is running: `curl http://localhost:3001/api/v2/metrics`
+   - Check API is running: `curl http://localhost:3001/api/v1/metrics`
    - Verify Prometheus config
    - Check firewall rules
 
@@ -308,7 +308,7 @@ predict_linear(process_resident_memory_bytes[1d], 7*24*3600)
 curl http://localhost:9090/api/v1/targets
 
 # Test metrics endpoint
-curl http://localhost:3001/api/v2/metrics | grep flight_
+curl http://localhost:3001/api/v1/metrics | grep flight_
 
 # Verify Grafana datasource
 curl -H "Authorization: Bearer <api-key>" \
@@ -366,7 +366,7 @@ Include performance monitoring in CI/CD:
     
 - name: Check Metrics
   run: |
-    curl http://localhost:3001/api/v2/metrics > metrics.txt
+    curl http://localhost:3001/api/v1/metrics > metrics.txt
     grep -q "http_requests_total" metrics.txt
 ```
 

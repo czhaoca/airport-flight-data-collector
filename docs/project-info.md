@@ -58,7 +58,7 @@ To provide reliable, automated collection of airport flight data for analysis of
   - Historical data visualization
   - Performance metrics
   
-- **REST API v2** (20% complete)
+- **REST API v1** (20% complete)
   - OpenAPI 3.0 specification
   - Rate limiting
   - Authentication/authorization
@@ -191,7 +191,7 @@ To provide reliable, automated collection of airport flight data for analysis of
 - [x] GraphQL API implementation
 - [x] Python SDK development
 - [x] Web dashboard (React/Next.js) - 85% complete
-- [x] REST API v2 with OpenAPI spec - 65% complete
+- [x] REST API v1 with OpenAPI spec - 65% complete
 - [x] Performance monitoring with Grafana - 70% complete
 - [x] Docker support with multi-stage builds - 60% complete
 - [x] Authentication system for dashboard - Complete

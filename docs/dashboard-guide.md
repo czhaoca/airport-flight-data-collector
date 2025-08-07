@@ -330,7 +330,7 @@ Set up automated reports:
 For programmatic access:
 ```javascript
 // Example: Fetch dashboard data
-const response = await fetch('/api/v2/dashboard/summary', {
+const response = await fetch('/api/v1/dashboard/summary', {
   headers: {
     'Authorization': 'Bearer YOUR_TOKEN'
   }

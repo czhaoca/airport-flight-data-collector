@@ -1,10 +1,10 @@
-# Airport Flight Data API v2
+# Airport Flight Data API v1
 
 Comprehensive REST and GraphQL API for accessing flight data, predictions, and analytics.
 
 ## Overview
 
-The Airport Flight Data API v2 provides:
+The Airport Flight Data API v1 provides:
 
 - **RESTful endpoints** for all operations
 - **GraphQL API** with real-time subscriptions
@@ -65,48 +65,48 @@ Authorization: Bearer YOUR_API_TOKEN
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/v2/flights` | GET | List flights with filtering |
-| `/api/v2/flights/:id` | GET | Get specific flight details |
-| `/api/v2/airports` | GET | List all airports |
-| `/api/v2/airports/:code` | GET | Get airport details |
-| `/api/v2/statistics` | GET | System-wide statistics |
+| `/api/v1/flights` | GET | List flights with filtering |
+| `/api/v1/flights/:id` | GET | Get specific flight details |
+| `/api/v1/airports` | GET | List all airports |
+| `/api/v1/airports/:code` | GET | Get airport details |
+| `/api/v1/statistics` | GET | System-wide statistics |
 
 ### Prediction Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/v2/predictions/delay` | POST | Predict delay for a flight |
-| `/api/v2/predictions/batch` | POST | Batch delay predictions |
-| `/api/v2/predictions/upcoming` | GET | Predictions for upcoming flights |
-| `/api/v2/predictions/high-risk` | GET | High-risk flight alerts |
-| `/api/v2/predictions/metrics` | GET | Model performance metrics |
+| `/api/v1/predictions/delay` | POST | Predict delay for a flight |
+| `/api/v1/predictions/batch` | POST | Batch delay predictions |
+| `/api/v1/predictions/upcoming` | GET | Predictions for upcoming flights |
+| `/api/v1/predictions/high-risk` | GET | High-risk flight alerts |
+| `/api/v1/predictions/metrics` | GET | Model performance metrics |
 
 ### Pattern Analysis Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/v2/patterns` | GET | Get detected patterns |
-| `/api/v2/patterns/summary` | GET | Pattern analysis summary |
-| `/api/v2/patterns/type/:type` | GET | Patterns by type |
-| `/api/v2/patterns/insights` | GET | Actionable insights |
-| `/api/v2/patterns/alerts` | GET | Real-time pattern alerts |
-| `/api/v2/patterns/analyze` | POST | Custom date range analysis |
+| `/api/v1/patterns` | GET | Get detected patterns |
+| `/api/v1/patterns/summary` | GET | Pattern analysis summary |
+| `/api/v1/patterns/type/:type` | GET | Patterns by type |
+| `/api/v1/patterns/insights` | GET | Actionable insights |
+| `/api/v1/patterns/alerts` | GET | Real-time pattern alerts |
+| `/api/v1/patterns/analyze` | POST | Custom date range analysis |
 
 ### Export & Integration
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/v2/export/flights` | GET | Export flight data |
-| `/api/v2/export/statistics` | GET | Export statistics |
-| `/api/v2/webhooks` | POST | Create webhook |
-| `/api/v2/batch` | POST | Batch operations |
+| `/api/v1/export/flights` | GET | Export flight data |
+| `/api/v1/export/statistics` | GET | Export statistics |
+| `/api/v1/webhooks` | POST | Create webhook |
+| `/api/v1/batch` | POST | Batch operations |
 
 ## GraphQL API
 
 ### Endpoint
 
 ```
-POST /api/v2/graphql
+POST /api/v1/graphql
 WS   ws://localhost:3001/graphql (subscriptions)
 ```
 
@@ -286,7 +286,7 @@ client.websocket.subscribe_airport("SFO", on_update)
 ```javascript
 const { GraphQLClient } = require('graphql-request');
 
-const client = new GraphQLClient('http://localhost:3001/api/v2/graphql', {
+const client = new GraphQLClient('http://localhost:3001/api/v1/graphql', {
   headers: {
     authorization: 'Bearer YOUR_KEY',
   },
@@ -314,7 +314,7 @@ const data = await client.request(query, { airport: 'SFO' });
 Register webhooks to receive real-time notifications:
 
 ```json
-POST /api/v2/webhooks
+POST /api/v1/webhooks
 {
   "url": "https://your-app.com/webhook",
   "events": ["flight.delayed", "flight.cancelled"],

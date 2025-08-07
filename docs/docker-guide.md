@@ -145,7 +145,7 @@ docker run \
 docker run -d \
   --name flight-dashboard \
   -p 3000:3000 \
-  -e NEXT_PUBLIC_API_URL=http://localhost:3001/api/v2 \
+  -e NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1 \
   flight-collector-dashboard
 ```
 
@@ -222,7 +222,7 @@ All services include health checks:
 
 ```bash
 # Check API health
-curl http://localhost:3001/api/v2/health
+curl http://localhost:3001/api/v1/health
 
 # Check all services
 docker-compose ps

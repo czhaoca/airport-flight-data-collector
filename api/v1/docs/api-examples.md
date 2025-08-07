@@ -1,13 +1,13 @@
-# API v2 Usage Examples
+# API v1 Usage Examples
 
-This guide provides practical examples of using the Airport Flight Data API v2.
+This guide provides practical examples of using the Airport Flight Data API v1.
 
 ## Authentication
 
 ### Getting an Access Token
 
 ```bash
-curl -X POST http://localhost:3001/api/v2/auth/login \
+curl -X POST http://localhost:3001/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "user@example.com",
@@ -30,7 +30,7 @@ Response:
 Include the token in all subsequent requests:
 
 ```bash
-curl http://localhost:3001/api/v2/flights \
+curl http://localhost:3001/api/v1/flights \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
@@ -39,21 +39,21 @@ curl http://localhost:3001/api/v2/flights \
 ### Get Current Flights at an Airport
 
 ```bash
-curl "http://localhost:3001/api/v2/flights?airport=SFO&status=active" \
+curl "http://localhost:3001/api/v1/flights?airport=SFO&status=active" \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
 ### Search for a Specific Flight
 
 ```bash
-curl "http://localhost:3001/api/v2/flights?flightNumber=UA123&date=2025-08-02" \
+curl "http://localhost:3001/api/v1/flights?flightNumber=UA123&date=2025-08-02" \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
 ### Get Flight History
 
 ```bash
-curl "http://localhost:3001/api/v2/flights?airport=YYZ&startDate=2025-08-01&endDate=2025-08-07" \
+curl "http://localhost:3001/api/v1/flights?airport=YYZ&startDate=2025-08-01&endDate=2025-08-07" \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
@@ -62,7 +62,7 @@ curl "http://localhost:3001/api/v2/flights?airport=YYZ&startDate=2025-08-01&endD
 ### Predict Single Flight Delay
 
 ```bash
-curl -X POST http://localhost:3001/api/v2/predictions/delay \
+curl -X POST http://localhost:3001/api/v1/predictions/delay \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -102,7 +102,7 @@ Response:
 ### Batch Predictions
 
 ```bash
-curl -X POST http://localhost:3001/api/v2/predictions/batch \
+curl -X POST http://localhost:3001/api/v1/predictions/batch \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -130,14 +130,14 @@ curl -X POST http://localhost:3001/api/v2/predictions/batch \
 ### Get Recent Patterns
 
 ```bash
-curl "http://localhost:3001/api/v2/patterns?type=temporal&severity=high" \
+curl "http://localhost:3001/api/v1/patterns?type=temporal&severity=high" \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
 ### Get Actionable Insights
 
 ```bash
-curl "http://localhost:3001/api/v2/patterns/insights?priority=high" \
+curl "http://localhost:3001/api/v1/patterns/insights?priority=high" \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
@@ -168,7 +168,7 @@ Response:
 ### Custom Pattern Analysis
 
 ```bash
-curl -X POST http://localhost:3001/api/v2/patterns/analyze \
+curl -X POST http://localhost:3001/api/v1/patterns/analyze \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -185,7 +185,7 @@ curl -X POST http://localhost:3001/api/v2/patterns/analyze \
 ### Export Flight Data as CSV
 
 ```bash
-curl "http://localhost:3001/api/v2/export/flights?airport=SFO&startDate=2025-08-01&endDate=2025-08-02&format=csv" \
+curl "http://localhost:3001/api/v1/export/flights?airport=SFO&startDate=2025-08-01&endDate=2025-08-02&format=csv" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -o flights-sfo-august.csv
 ```
@@ -193,7 +193,7 @@ curl "http://localhost:3001/api/v2/export/flights?airport=SFO&startDate=2025-08-
 ### Export Statistics
 
 ```bash
-curl "http://localhost:3001/api/v2/export/statistics?period=monthly&year=2025&format=json" \
+curl "http://localhost:3001/api/v1/export/statistics?period=monthly&year=2025&format=json" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   > statistics-2025.json
 ```
@@ -236,7 +236,7 @@ socket.on('pattern:detected', (data) => {
 ```javascript
 const EventSource = require('eventsource');
 
-const sse = new EventSource('http://localhost:3001/api/v2/sse/flights?airport=SFO', {
+const sse = new EventSource('http://localhost:3001/api/v1/sse/flights?airport=SFO', {
   headers: {
     'Authorization': 'Bearer YOUR_TOKEN'
   }
@@ -331,7 +331,7 @@ subscription AirportUpdates($airports: [String!]!) {
 ### Register a Webhook
 
 ```bash
-curl -X POST http://localhost:3001/api/v2/webhooks \
+curl -X POST http://localhost:3001/api/v1/webhooks \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -398,7 +398,7 @@ Pattern Detected:
 ### Multiple Operations in One Request
 
 ```bash
-curl -X POST http://localhost:3001/api/v2/batch \
+curl -X POST http://localhost:3001/api/v1/batch \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

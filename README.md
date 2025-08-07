@@ -25,7 +25,7 @@ The application features a modular architecture that makes it easy to add new ai
 - ⚙️ **Environment Configuration**: Flexible deployment options
 - 📅 **Historical Data**: Complete archive since August 2024
 
-### New in v2.5 (August 2025)
+### Features (v1.0 - Development)
 - 🤖 **Machine Learning Predictions**: Delay prediction with 85% accuracy
 - 🔍 **Pattern Detection**: Automated discovery of operational patterns
 - 📡 **GraphQL API**: Flexible queries with real-time subscriptions
@@ -34,7 +34,7 @@ The application features a modular architecture that makes it easy to add new ai
 - 🐍 **Python SDK**: Full-featured SDK for easy integration
 - 🪝 **Webhook System**: Real-time event notifications
 - 📦 **Data Export**: Support for JSON, CSV, and Parquet formats
-- 🎯 **REST API v2**: Comprehensive RESTful endpoints
+- 🎯 **REST API v1**: Comprehensive RESTful endpoints
 - 📈 **Dashboard**: React/Next.js web dashboard with real-time updates
 
 ## 🚀 Quick Start
@@ -98,11 +98,11 @@ npm run collect
 
 ```bash
 # Start the API server
-cd api/v2 && npm start
+cd api/v1 && npm start
 
 # Access endpoints:
-# REST API: http://localhost:3001/api/v2
-# GraphQL: http://localhost:3001/api/v2/graphql
+# REST API: http://localhost:3001/api/v1
+# GraphQL: http://localhost:3001/api/v1/graphql
 # WebSocket: ws://localhost:3001/socket.io
 
 # Start the dashboard

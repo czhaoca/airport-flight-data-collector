@@ -42,7 +42,7 @@ npm install
 cp .env.example .env.local
 
 # Edit .env.local with your API URL
-NEXT_PUBLIC_API_URL=http://localhost:3001/api/v2
+NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
 ```
 
 ### Development
@@ -140,7 +140,7 @@ const socket = useWebSocket();
 socket.on('flight:update', handleFlightUpdate);
 
 // Server-Sent Events for status changes
-const sse = useSSE('/api/v2/sse/flights');
+const sse = useSSE('/api/v1/sse/flights');
 sse.addEventListener('delay-alert', handleDelayAlert);
 ```
 
@@ -165,7 +165,7 @@ Interactive charts using Recharts:
 
 ```bash
 # API Configuration
-NEXT_PUBLIC_API_URL=http://localhost:3001/api/v2
+NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
 
 # WebSocket Configuration
 NEXT_PUBLIC_WS_URL=ws://localhost:3001
@@ -197,7 +197,7 @@ theme: {
 
 ## API Integration
 
-The dashboard integrates with the Flight Data API v2:
+The dashboard integrates with the Flight Data API v1:
 
 ```typescript
 // Example API usage
@@ -333,4 +333,4 @@ MIT License - see LICENSE file for details
 For issues and questions:
 - GitHub Issues: [Report a bug](https://github.com/czhaoca/airport-flight-data-collector/issues)
 - Documentation: [Full docs](../docs/README.md)
-- API Reference: [API docs](../api/v2/README.md)
+- API Reference: [API docs](../api/v1/README.md)

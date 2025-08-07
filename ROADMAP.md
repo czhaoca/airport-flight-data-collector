@@ -37,7 +37,7 @@ Current Quarter: **Q2 2025**
 - [x] Performance metrics dashboard
 - [x] Mobile-responsive design
 
-#### REST API v2 (100% complete)
+#### REST API v1 (100% complete)
 - [x] OpenAPI 3.0 specification
 - [x] RESTful endpoints for all operations
 - [x] JWT authentication
@@ -226,7 +226,7 @@ We welcome community input on our roadmap! Here's how you can contribute:
 
 ### High Priority
 - Web dashboard completion
-- REST API v2
+- REST API v1
 - New airport integrations
 - Performance monitoring
 
@@ -246,7 +246,7 @@ We welcome community input on our roadmap! Here's how you can contribute:
 ### 2025 Releases
 - **v2.1.0** (Jan 2025) ✅ - Documentation & Architecture
 - **v2.2.0** (Apr 2025) - Dashboard Alpha
-- **v2.3.0** (Jun 2025) - API v2 & New Airports
+- **v1.0.0** (Development) - API v1 & Core Features
 - **v2.4.0** (Sep 2025) - Analytics Engine
 - **v3.0.0** (Dec 2025) - Enterprise Features
 

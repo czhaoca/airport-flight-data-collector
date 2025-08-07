@@ -4,9 +4,9 @@ The Airport Flight Data Collector provides a GraphQL API for flexible queries an
 
 ## Endpoint
 
-- **GraphQL Endpoint**: `POST http://localhost:3001/api/v2/graphql`
+- **GraphQL Endpoint**: `POST http://localhost:3001/api/v1/graphql`
 - **GraphQL Subscriptions**: `ws://localhost:3001/graphql`
-- **GraphQL Playground**: `http://localhost:3001/api/v2/graphql` (in development mode)
+- **GraphQL Playground**: `http://localhost:3001/api/v1/graphql` (in development mode)
 
 ## Authentication
 

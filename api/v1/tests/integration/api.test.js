@@ -2,7 +2,7 @@ const request = require('supertest');
 const app = require('../../src/server');
 const jwt = require('jsonwebtoken');
 
-describe('Airport Flight Data API v2 Integration Tests', () => {
+describe('Airport Flight Data API v1 Integration Tests', () => {
   let authToken;
   let server;
 
@@ -25,9 +25,9 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
   });
 
   describe('Health Check', () => {
-    test('GET /api/v2/health should return 200', async () => {
+    test('GET /api/v1/health should return 200', async () => {
       const response = await request(server)
-        .get('/api/v2/health')
+        .get('/api/v1/health')
         .expect(200);
 
       expect(response.body).toMatchObject({
@@ -39,9 +39,9 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
   });
 
   describe('Authentication', () => {
-    test('POST /api/v2/auth/login should return token', async () => {
+    test('POST /api/v1/auth/login should return token', async () => {
       const response = await request(server)
-        .post('/api/v2/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           username: 'test@example.com',
           password: 'password123'
@@ -57,15 +57,15 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
 
     test('Protected endpoints should require auth', async () => {
       await request(server)
-        .get('/api/v2/flights')
+        .get('/api/v1/flights')
         .expect(401);
     });
   });
 
   describe('Flight Endpoints', () => {
-    test('GET /api/v2/flights should return flight list', async () => {
+    test('GET /api/v1/flights should return flight list', async () => {
       const response = await request(server)
-        .get('/api/v2/flights')
+        .get('/api/v1/flights')
         .set('Authorization', `Bearer ${authToken}`)
         .query({ airport: 'SFO', limit: 10 })
         .expect(200);
@@ -81,9 +81,9 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
       });
     });
 
-    test('GET /api/v2/flights/:id should return flight details', async () => {
+    test('GET /api/v1/flights/:id should return flight details', async () => {
       const response = await request(server)
-        .get('/api/v2/flights/UA123-20250802')
+        .get('/api/v1/flights/UA123-20250802')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200);
 
@@ -99,9 +99,9 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
   });
 
   describe('Airport Endpoints', () => {
-    test('GET /api/v2/airports should return airport list', async () => {
+    test('GET /api/v1/airports should return airport list', async () => {
       const response = await request(server)
-        .get('/api/v2/airports')
+        .get('/api/v1/airports')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200);
 
@@ -123,9 +123,9 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
       );
     });
 
-    test('GET /api/v2/airports/:code should return airport details', async () => {
+    test('GET /api/v1/airports/:code should return airport details', async () => {
       const response = await request(server)
-        .get('/api/v2/airports/SFO')
+        .get('/api/v1/airports/SFO')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200);
 
@@ -142,9 +142,9 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
   });
 
   describe('Statistics Endpoints', () => {
-    test('GET /api/v2/statistics should return system stats', async () => {
+    test('GET /api/v1/statistics should return system stats', async () => {
       const response = await request(server)
-        .get('/api/v2/statistics')
+        .get('/api/v1/statistics')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200);
 
@@ -156,9 +156,9 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
       });
     });
 
-    test('GET /api/v2/statistics/airport/:code should return airport stats', async () => {
+    test('GET /api/v1/statistics/airport/:code should return airport stats', async () => {
       const response = await request(server)
-        .get('/api/v2/statistics/airport/SFO')
+        .get('/api/v1/statistics/airport/SFO')
         .set('Authorization', `Bearer ${authToken}`)
         .query({ period: 'day' })
         .expect(200);
@@ -177,9 +177,9 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
   });
 
   describe('Prediction Endpoints', () => {
-    test('POST /api/v2/predictions/delay should return prediction', async () => {
+    test('POST /api/v1/predictions/delay should return prediction', async () => {
       const response = await request(server)
-        .post('/api/v2/predictions/delay')
+        .post('/api/v1/predictions/delay')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           flightNumber: 'UA123',
@@ -204,9 +204,9 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
       });
     });
 
-    test('POST /api/v2/predictions/batch should handle multiple predictions', async () => {
+    test('POST /api/v1/predictions/batch should handle multiple predictions', async () => {
       const response = await request(server)
-        .post('/api/v2/predictions/batch')
+        .post('/api/v1/predictions/batch')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           flights: [
@@ -233,9 +233,9 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
   });
 
   describe('Pattern Analysis Endpoints', () => {
-    test('GET /api/v2/patterns should return detected patterns', async () => {
+    test('GET /api/v1/patterns should return detected patterns', async () => {
       const response = await request(server)
-        .get('/api/v2/patterns')
+        .get('/api/v1/patterns')
         .set('Authorization', `Bearer ${authToken}`)
         .query({ limit: 5 })
         .expect(200);
@@ -252,9 +252,9 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
       );
     });
 
-    test('GET /api/v2/patterns/insights should return actionable insights', async () => {
+    test('GET /api/v1/patterns/insights should return actionable insights', async () => {
       const response = await request(server)
-        .get('/api/v2/patterns/insights')
+        .get('/api/v1/patterns/insights')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200);
 
@@ -272,9 +272,9 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
   });
 
   describe('Export Endpoints', () => {
-    test('GET /api/v2/export/flights should export flight data', async () => {
+    test('GET /api/v1/export/flights should export flight data', async () => {
       const response = await request(server)
-        .get('/api/v2/export/flights')
+        .get('/api/v1/export/flights')
         .set('Authorization', `Bearer ${authToken}`)
         .query({
           airport: 'SFO',
@@ -296,9 +296,9 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
       });
     });
 
-    test('GET /api/v2/export/flights?format=csv should return CSV', async () => {
+    test('GET /api/v1/export/flights?format=csv should return CSV', async () => {
       const response = await request(server)
-        .get('/api/v2/export/flights')
+        .get('/api/v1/export/flights')
         .set('Authorization', `Bearer ${authToken}`)
         .query({
           airport: 'SFO',
@@ -316,9 +316,9 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
   describe('Webhook Endpoints', () => {
     let webhookId;
 
-    test('POST /api/v2/webhooks should create webhook', async () => {
+    test('POST /api/v1/webhooks should create webhook', async () => {
       const response = await request(server)
-        .post('/api/v2/webhooks')
+        .post('/api/v1/webhooks')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           url: 'https://example.com/webhook',
@@ -340,9 +340,9 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
       webhookId = response.body.data.id;
     });
 
-    test('GET /api/v2/webhooks should list webhooks', async () => {
+    test('GET /api/v1/webhooks should list webhooks', async () => {
       const response = await request(server)
-        .get('/api/v2/webhooks')
+        .get('/api/v1/webhooks')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200);
 
@@ -356,18 +356,18 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
       );
     });
 
-    test('DELETE /api/v2/webhooks/:id should delete webhook', async () => {
+    test('DELETE /api/v1/webhooks/:id should delete webhook', async () => {
       await request(server)
-        .delete(`/api/v2/webhooks/${webhookId}`)
+        .delete(`/api/v1/webhooks/${webhookId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(204);
     });
   });
 
   describe('Batch Operations', () => {
-    test('POST /api/v2/batch should process batch operations', async () => {
+    test('POST /api/v1/batch should process batch operations', async () => {
       const response = await request(server)
-        .post('/api/v2/batch')
+        .post('/api/v1/batch')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           operations: [
@@ -392,9 +392,9 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
   });
 
   describe('Monitoring Endpoints', () => {
-    test('GET /api/v2/metrics should return Prometheus metrics', async () => {
+    test('GET /api/v1/metrics should return Prometheus metrics', async () => {
       const response = await request(server)
-        .get('/api/v2/metrics')
+        .get('/api/v1/metrics')
         .expect(200);
 
       expect(response.headers['content-type']).toContain('text/plain');
@@ -402,9 +402,9 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
       expect(response.text).toContain('# TYPE');
     });
 
-    test('GET /api/v2/websocket/stats should return WebSocket stats', async () => {
+    test('GET /api/v1/websocket/stats should return WebSocket stats', async () => {
       const response = await request(server)
-        .get('/api/v2/websocket/stats')
+        .get('/api/v1/websocket/stats')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200);
 
@@ -423,7 +423,7 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
   describe('Error Handling', () => {
     test('Should return 404 for non-existent endpoints', async () => {
       const response = await request(server)
-        .get('/api/v2/nonexistent')
+        .get('/api/v1/nonexistent')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
 
@@ -435,7 +435,7 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
 
     test('Should validate request parameters', async () => {
       const response = await request(server)
-        .get('/api/v2/flights')
+        .get('/api/v1/flights')
         .set('Authorization', `Bearer ${authToken}`)
         .query({ limit: 'invalid' })
         .expect(400);
@@ -457,7 +457,7 @@ describe('Airport Flight Data API v2 Integration Tests', () => {
       // Make multiple rapid requests
       const requests = Array(10).fill(null).map(() =>
         request(server)
-          .get('/api/v2/flights')
+          .get('/api/v1/flights')
           .set('Authorization', `Bearer ${authToken}`)
       );
 

@@ -8,7 +8,7 @@ const compression = require('compression');
 const { requestLogger, apiLogger } = require('../../../lib/logging');
 const SocketServer = require('./websocket/socket-server');
 const { getInstance: getEventEmitter } = require('./websocket/event-emitter');
-const errorHandler = require('./middleware/errorHandler');
+const { errorHandler } = require('./middleware/errorHandler');
 const rateLimiter = require('./middleware/rateLimiter');
 const { createApolloServer, createWebSocketServer, setupEventIntegration } = require('./graphql/server');
 
