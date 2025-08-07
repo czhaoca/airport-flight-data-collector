@@ -78,20 +78,24 @@ COPY dashboard/package*.json ./
 RUN npm ci
 
 COPY dashboard ./
+
+# Build the Next.js app
+ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # Stage 8: Dashboard runtime
 FROM node:20-alpine AS dashboard
 WORKDIR /app
 
-# Install serve to run the built dashboard
-RUN npm install -g serve
+# Copy built dashboard and dependencies
+COPY --from=dashboard-builder /app/dashboard/.next ./dashboard/.next
+COPY --from=dashboard-builder /app/dashboard/public ./dashboard/public
+COPY --from=dashboard-builder /app/dashboard/package*.json ./dashboard/
+COPY --from=dashboard-builder /app/dashboard/node_modules ./dashboard/node_modules
 
-# Copy built dashboard
-COPY --from=dashboard-builder /app/dashboard/out ./dashboard
-
+WORKDIR /app/dashboard
 EXPOSE 3000
-CMD ["serve", "-s", "dashboard", "-l", "3000"]
+CMD ["npm", "start"]
 
 # Stage 9: Full stack (default)
 FROM base AS fullstack
