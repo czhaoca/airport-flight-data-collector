@@ -25,6 +25,7 @@ const webhooksRouter = require('./routes/webhooks');
 const predictionsRouter = require('./routes/predictions');
 const patternsRouter = require('./routes/patterns');
 const metricsRouter = require('./routes/metrics');
+const analyticsRouter = require('./routes/analytics');
 const { metricsMiddleware } = require('./middleware/metrics');
 
 // Check dependencies
@@ -118,6 +119,7 @@ app.use('/api/v2/webhooks', webhooksRouter);
 app.use('/api/v2/predictions', predictionsRouter);
 app.use('/api/v2/patterns', patternsRouter);
 app.use('/api/v2/metrics', metricsRouter);
+app.use('/api/v2/analytics', analyticsRouter);
 
 // WebSocket statistics endpoint
 app.get('/api/v2/websocket/stats', (req, res) => {
