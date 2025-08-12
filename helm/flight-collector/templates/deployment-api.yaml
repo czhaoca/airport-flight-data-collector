@@ -45,7 +45,7 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /api/v2/health
+              path: /api/v1/health
               port: http
             initialDelaySeconds: {{ .Values.healthcheck.liveness.initialDelaySeconds }}
             periodSeconds: {{ .Values.healthcheck.liveness.periodSeconds }}
@@ -53,7 +53,7 @@ spec:
             failureThreshold: {{ .Values.healthcheck.liveness.failureThreshold }}
           readinessProbe:
             httpGet:
-              path: /api/v2/health
+              path: /api/v1/health
               port: http
             initialDelaySeconds: {{ .Values.healthcheck.readiness.initialDelaySeconds }}
             periodSeconds: {{ .Values.healthcheck.readiness.periodSeconds }}

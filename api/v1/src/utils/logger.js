@@ -10,7 +10,7 @@ const logger = winston.createLogger({
     winston.format.errors({ stack: true }),
     winston.format.json()
   ),
-  defaultMeta: { service: 'api-v2' },
+  defaultMeta: { service: 'api-v1' },
   transports: [
     // Write all logs to console
     new winston.transports.Console({
